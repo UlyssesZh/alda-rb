@@ -1,8 +1,7 @@
-# Alda::Rb
+# Alda-rb
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/alda/rb`. To experiment with that code, run `bin/console` for an interactive prompt.
-
-TODO: Delete this and the text above, and describe your gem
+A Ruby library for live-coding music with [Alda](https://alda.io/).
+Also provides a Alda DSL in Ruby.
 
 ## Installation
 
@@ -22,7 +21,40 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+[Install Alda](https://github.com/alda-lang/alda#Installation),
+and try the following Ruby codes yourself:
+
+```ruby
+require 'alda-rb'
+
+Alda.up if Alda.down?
+puts Alda.version
+
+score = Alda::Score.new { o4; c4/e/g; -d8; r8_16; +f4; o5; c2 }
+
+Alda::Score.new do
+  piano_
+  quant 200
+  v1
+  5.times do |t|
+    transpose t
+    import score
+    note midi_note(30 + t * t), duration(note_length 1)
+  end
+  v2; o6
+  motif = -> { c200ms; d500ms }
+  8.times { motif * 2; e400ms_4; t4 { a; b; c } }
+  _ended
+  
+  violin_
+  __ended
+  ->i do
+    c2; d4; e2_4; e2; d4; c2_4; c2; e4; d2
+    i == 0 ? (c4; d1_2) : (d4; c1_2)
+  end * 2
+
+end.play
+```
 
 ## Development
 
