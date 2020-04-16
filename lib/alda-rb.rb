@@ -7,7 +7,7 @@ class Array
 end
 class Hash
 	def to_alda_code
-		"{#{to_a.flatten.map(&:to_alda_code).join ' '}}"
+		"{#{to_a.reduce(:+).map(&:to_alda_code).join ' '}}"
 	end
 end
 class String
@@ -23,6 +23,11 @@ end
 class Numeric
 	def to_alda_code
 		inspect
+	end
+end
+class Range
+	def to_alda_code
+		"#{first}-#{last}"
 	end
 end
 class Proc
@@ -48,6 +53,7 @@ module Alda
 	
 	# The method give Alda# ability to invoke +alda+ at the command line,
 	# using +name+ as subcommand and +args+ as arguments.
+	# +opts+ are converted to command line options.
 	#
 	# The return value is the string output by the command in STDOUT.
 	#
@@ -55,12 +61,15 @@ module Alda
 	# @example
 	#   Alda.version
 	#   # => "Client version: 1.4.0\nServer version: [27713] 1.4.0\n"
-	#   Alda.parse '-c', 'bassoon: o3 c'
+	#   Alda.parse code: 'bassoon: o3 c'
 	#   # => "{\"chord-mode\":false,\"current-instruments\":...}\n"
 	#   Alda.sandwich
 	#   # => Alda::CommandLineError (Expected a command, got sandwich)
-	def self.method_missing name, *args
+	def self.method_missing name, *args, **opts
 		name = name.to_s.gsub ?_, ?-
+		args.concat opts.map { |key, val|
+			["--#{key.to_s.gsub ?_, ?-}", val.to_s]
+		}.flatten
 		output = IO.popen [executable, name, *args], &:read
 		raise CommandLineError.new $?, output if $?.exitstatus.nonzero?
 		output
@@ -94,7 +103,7 @@ module Alda
 	end
 	
 	# Including this module can make your class have the ability
-	# to have a event list.
+	# to have an event list.
 	# See docs below to get an overview of its functions.
 	module EventList
 		
@@ -120,20 +129,22 @@ module Alda
 		#
 		# 5. Starting with "r": rest. See Rest#.
 		#
-		# 6. Starting with "x": chord. See Chord#.
+		# 6. "x": chord. See Chord#.
 		#
-		# 7. Starting with "o": octave. See Octave#.
+		# 7. "s": sequence. See Sequence#.
 		#
-		# 8. Starting with "v": voice. See Voice#.
+		# 8. Starting with "o": octave. See Octave#.
 		#
-		# 9. Starting with "__" (2 underlines): at marker. See AtMarker#.
+		# 9. Starting with "v": voice. See Voice#.
 		#
-		# 10. Starting with "_" (underline): marker. See Marker#.
+		# 10. Starting with "__" (2 underlines): at marker. See AtMarker#.
+		#
+		# 11. Starting with "_" (underline): marker. See Marker#.
 		#
 		# Notes cannot have dots.
 		# To tie multiple durations, +_+ is used instead of +~+.
 		#
-		# All the appended events are contained in a EventContainer# object,
+		# All the appended events are contained in an EventContainer# object,
 		# which is to be returned.
 		#
 		# These sugars forms a DSL.
@@ -153,6 +164,8 @@ module Alda
 				Rest.new duration
 			when /^x$/                              =~ name
 				Chord.new &block
+			when /^s$/                              =~ name
+				Sequence.new *args, &block
 			when /^o(?<num>\d*)$/                   =~ name
 				Octave.new num
 			when /^v(?<num>\d+)$/                   =~ name
@@ -171,8 +184,9 @@ module Alda
 		# Append the events of another EventList# object here.
 		# This method covers the disadvantage of alda's being unable to
 		# import scores from other files.
+		# See https://github.com/alda-lang/alda-core/issues/8.
 		def import event_list
-			@events += event_list.events
+			@events.concat event_list.events
 		end
 		
 		# @param block to be passed with the EventList# object as +self+.
@@ -204,19 +218,43 @@ module Alda
 		end
 	end
 	
-	# The class mixes in EventList# and provides a method to play.
+	# The class mixes in EventList# and provides methods to play or parse.
 	class Score
 		include EventList
 		
 		# Plays the score.
-		# @return the command line output of the +alda+ command.
+		# @return The command line output of the +alda+ command.
 		# @example
 		#   Alda::Score.new { piano_; c; d; e }.play
 		#   # => "[27713] Parsing/evaluating...\n[27713] Playing...\n"
 		#   # (and plays the sound)
-		def play
+		#   Alda::Score.new { piano_; c; d; e }.play from: 1
+		#   # (plays only an E note)
+		def play **opts
 			Alda.stop
-			Alda.play '--code', events_alda_codes
+			Alda.play code: self, **opts
+		end
+		
+		# Parses the score.
+		# @return The JSON string of the parse result.
+		# @example
+		#   Alda::Score.new { piano_; c }.parse output: :events
+		#   # => "[{\"event-type\":...}]\n"
+		def parse **opts
+			Alda.parse code: self, **opts
+		end
+		
+		# Exports the score.
+		# @return The command line output of the +alda+ command.
+		# @example
+		#   Alda::Score.new { piano_; c }.export output: 'temp.mid'
+		#   # (outputs a midi file called temp.mid)
+		def export **opts
+			Alda.export code: self, **opts
+		end
+		
+		def to_s
+			events_alda_codes
 		end
 	end
 	
@@ -224,11 +262,11 @@ module Alda
 	class Event
 		
 		# The EventList# object that contains it.
-		# Note that it may not be directly contained, but with a EventContainer#
+		# Note that it may not be directly contained, but with an EventContainer#
 		# object in the middle.
 		attr_accessor :parent
 		
-		# The callback invoked when it is contained in a EventContainer#.
+		# The callback invoked when it is contained in an EventContainer#.
 		# It is overridden in InlineLisp#, so be aware if you want to
 		# override InlineLisp#on_contained.
 		# @example
@@ -253,12 +291,19 @@ module Alda
 		# The contained Event# object.
 		attr_accessor :event
 		
+		# The repetition counts. +nil+ if none.
+		attr_accessor :count
+		
+		# The repetition labels. Empty if none.
+		attr_accessor :labels
+		
 		# @param event The Event# object to be contained.
 		# @param parent The EventList# object containing the event.
 		def initialize event, parent
 			@event = event
 			@parent = parent
 			@event.parent = @parent
+			@labels = []
 			@event.on_contained
 		end
 		
@@ -284,11 +329,29 @@ module Alda
 		end
 		
 		def to_alda_code
-			@event.to_alda_code
+			result = @event.to_alda_code
+			unless @labels.empty?
+				result.concat ?', @labels.map(&:to_alda_code).join(?,)
+			end
+			result.concat ?*, @count.to_alda_code if @count
+			result
+		end
+		
+		# Marks repetition.
+		def * num
+			@count = num
+		end
+		
+		# Marks alternative repetition.
+		def % labels
+			labels = [labels] unless labels.respond_to? :to_a
+			@labels.replace labels.to_a
 		end
 		
 		def method_missing name, *args
-			@event.__send__ name, *args
+			result = @event.__send__ name, *args
+			result = self if result == @event
+			result
 		end
 	end
 	
@@ -341,7 +404,7 @@ module Alda
 		#   Alda::Score.new { piano_; +c }.play
 		#   # (plays a C\# note)
 		def +@
-			@pitch += ?+
+			@pitch.concat ?+
 			self
 		end
 		
@@ -350,7 +413,7 @@ module Alda
 		#   Alda::Score.new { piano_; -d }.play
 		#   # (plays a Db note)
 		def -@
-			@pitch += ?-
+			@pitch.concat ?-
 			self
 		end
 		
@@ -359,12 +422,14 @@ module Alda
 		#   Alda::Score.new { piano_; key_sig 'f+'; ~f }.play
 		#   # (plays a F note)
 		def ~
-			@pitch += ?_
+			@pitch.concat ?_
 			self
 		end
 		
 		def to_alda_code
-			@pitch + @duration
+			result = @pitch + @duration
+			result.concat ?*, @count.to_alda_code if @count
+			result
 		end
 	end
 	
@@ -466,8 +531,20 @@ module Alda
 		
 		def to_alda_code
 			result = @names.join ?/
-			result += " \"#{@arg}\"" if @arg
-			result + ?:
+			result.concat " \"#{@arg}\"" if @arg
+			result.concat ?:
+		end
+		
+		# @example
+		#   Alda::Score.new do
+		#     violin_/viola_/cello_('strings'); g1_1_1
+		#     strings_.cello_; -o; c1_1_1
+		#   end.play
+		def method_missing name, *args
+			name = name.to_s
+			return super unless name[-1] == ?_
+			name[-1] = ''
+			@names.last.concat ?., name
 		end
 	end
 	
@@ -525,7 +602,7 @@ module Alda
 		end
 	end
 	
-	# An at-marker event
+	# An at-marker event.
 	# @see Marker#
 	class AtMarker < Event
 		
@@ -539,6 +616,15 @@ module Alda
 		
 		def to_alda_code
 			?@ + @name
+		end
+	end
+	
+	# A sequence event. Includes EventList#.
+	class Sequence < Event
+		include EventList
+		
+		def to_alda_code
+			@events.to_alda_code
 		end
 	end
 end
