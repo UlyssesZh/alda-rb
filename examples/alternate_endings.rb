@@ -11,7 +11,7 @@ Alda::Score.new do
 	s do
 		a; b8; +o; d; -o; b; g; b; +o; c
 		e4; -o; a; +o; c; -o; g
-		s{ g; +o; g8; f; e; c; -o; a4 }%1..2
+		s{ g; +o; g8; f; e; c; -o; a4 }%(1..2)
 		s{ b8; +o; d; g2_4 }%3
 	end * 3
 	
@@ -20,7 +20,7 @@ Alda::Score.new do
 	s do
 		a; +o; e; -o; a; r
 		b; r; b; r
-		s{ g; r; +o; g; -o; g }%1..2
+		s{ g; r; +o; g; -o; g }%(1..2)
 		s{ +o; d; r; a; g }%3
 	end * 3
 end.play

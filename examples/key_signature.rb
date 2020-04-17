@@ -7,11 +7,11 @@ Alda::Score.new do
 	quant 200
 	
 	key_signature 'f+ c+ g+'
-	a8; b; +o; c; d; e; f; g; a; -o
-	a; b; +o; ~c; d; e; ~f; ~g; a; -o
+	a8 b o! c d e f g a o?
+	a b o! c__ d e f__ g__ a o?
 	
 	key_signature [:g, :minor]
-	g; a; b; +o; +c; d; e; +f; g; -o
+	g a b o! c! d e f! g o?
 	
 	key_signature e: [:flat], b: [:flat]
 	g1_1/b/d

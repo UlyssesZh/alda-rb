@@ -67,9 +67,9 @@ module Alda
 	#   # => Alda::CommandLineError (Expected a command, got sandwich)
 	def self.method_missing name, *args, **opts
 		name = name.to_s.gsub ?_, ?-
-		args.concat opts.map { |key, val|
-			["--#{key.to_s.gsub ?_, ?-}", val.to_s]
-		}.flatten
+		opts.each do |key, val|
+			args.push "--#{key.to_s.gsub ?_, ?-}", val.to_s
+		end
 		output = IO.popen [executable, name, *args], &:read
 		raise CommandLineError.new $?, output if $?.exitstatus.nonzero?
 		output
@@ -151,29 +151,46 @@ module Alda
 		# @see #initialize.
 		# @return an EventContainer# object.
 		def method_missing name, *args, &block
+			sequence_sugar = ->event do
+				if args.size == 1
+					joined = args.first
+					raise unless @events.pop == joined
+					Sequence.join event, joined
+				else
+					event
+				end
+			end
 			case
 			when /^(?<part>[a-z][a-z].*)_$/         =~ name
-				Part.new [part], args.first
+				if args.first.is_a? String
+					Part.new [part], args.first
+				else
+					sequence_sugar.(Part.new [part])
+				end
 			when /^[a-z][a-z].*$/                   =~ name
 				InlineLisp.new name, *args
 			when /^t(?<duration>.*)$/               =~ name
 				Cram.new duration, &block
 			when /^(?<pitch>[a-g])(?<duration>.*)$/ =~ name
-				Note.new pitch, duration
+				sequence_sugar.(Note.new pitch, duration)
 			when /^r(?<duration>.*)$/               =~ name
-				Rest.new duration
+				sequence_sugar.(Rest.new duration)
 			when /^x$/                              =~ name
 				Chord.new &block
 			when /^s$/                              =~ name
 				Sequence.new *args, &block
+			when /^o!$/                             =~ name
+				sequence_sugar.(Octave.new('').tap { _1.up_or_down = 1})
+			when /^o\?$/                            =~ name
+				sequence_sugar.(Octave.new('').tap { _1.up_or_down = -1})
 			when /^o(?<num>\d*)$/                   =~ name
-				Octave.new num
+				sequence_sugar.(Octave.new num)
 			when /^v(?<num>\d+)$/                   =~ name
-				Voice.new num
+				sequence_sugar.(Voice.new num)
 			when /^__(?<head>.+)$/                  =~ name
-				AtMarker.new head
+				sequence_sugar.(AtMarker.new head)
 			when /^_(?<head>.+)$/                   =~ name
-				Marker.new head
+				sequence_sugar.(Marker.new head)
 			else
 				super
 			end.then do |event|
@@ -266,6 +283,11 @@ module Alda
 		# object in the middle.
 		attr_accessor :parent
 		
+		# The EventContainer# object that contains it.
+		# It may be +nil+, especially probably when
+		# it itself is an EventContainer#.
+		attr_accessor :container
+		
 		# The callback invoked when it is contained in an EventContainer#.
 		# It is overridden in InlineLisp#, so be aware if you want to
 		# override InlineLisp#on_contained.
@@ -302,9 +324,8 @@ module Alda
 		def initialize event, parent
 			@event = event
 			@parent = parent
-			@event.parent = @parent
 			@labels = []
-			@event.on_contained
+			on_containing
 		end
 		
 		# Make #event a Chord# object.
@@ -340,12 +361,28 @@ module Alda
 		# Marks repetition.
 		def * num
 			@count = num
+			self
 		end
 		
 		# Marks alternative repetition.
 		def % labels
 			labels = [labels] unless labels.respond_to? :to_a
 			@labels.replace labels.to_a
+			self
+		end
+		
+		def event= event
+			@event = event
+			on_containing
+			@event
+		end
+		
+		def on_containing
+			if @event
+				@event.container = self
+				@event.parent = @parent
+				@event.on_contained
+			end
 		end
 		
 		def method_missing name, *args
@@ -397,6 +434,25 @@ module Alda
 		def initialize pitch, duration
 			@pitch = pitch.to_s
 			@duration = duration.to_s.gsub ?_, ?~
+			case (/(?<str>~*)$/ =~ @duration ? str.size : return)
+			when 0 # no slur or natural
+				case @duration[-1]
+				when ?! # sharp
+					@pitch.concat ?+
+					@duration[-1] = ''
+				when ?? # flat
+					@pitch.concat ?-
+					@duration[-1] = ''
+				end
+			when 1 # natural
+				@pitch.concat ?_
+				@duration[-1] = ''
+			when 2 # slur
+				@duration[-1] = ''
+			when 3 # slur and natural
+				@pitch.concat ?_
+				@duration[@duration.size - 2..] = ''
+			end
 		end
 		
 		# Append a sharp sign after #pitch.
@@ -441,7 +497,7 @@ module Alda
 		
 		# Underlines in +duration+ will be converted to +~+.
 		def initialize duration
-			@duration = duration.to_s.gsub ?_, ?~
+			@duration = duration.to_s.tr ?_, ?~
 		end
 		
 		def to_alda_code
@@ -525,7 +581,7 @@ module Alda
 		attr_accessor :arg
 		
 		def initialize names, arg = nil
-			@names = names.map { |name| name.to_s.gsub ?_, ?- }
+			@names = names.map { |name| name.to_s.tr ?_, ?- }
 			@arg = arg
 		end
 		
@@ -535,16 +591,27 @@ module Alda
 			result.concat ?:
 		end
 		
+		# Enables dot accessor.
 		# @example
 		#   Alda::Score.new do
 		#     violin_/viola_/cello_('strings'); g1_1_1
 		#     strings_.cello_; -o; c1_1_1
 		#   end.play
 		def method_missing name, *args
-			name = name.to_s
-			return super unless name[-1] == ?_
-			name[-1] = ''
-			@names.last.concat ?., name
+			str = name.to_s
+			return super unless str[-1] == ?_
+			str[-1] = ''
+			@names.last.concat ?., str
+			if args.size == 1
+				joined = args.first
+				raise unless @parent.events.pop == joined
+				unless @container
+					@container = EventContainer.new nil, @parent
+					@parent.events.delete self
+					@parent.push @container
+				end
+				@container.event = Sequence.join self, joined
+			end
 		end
 	end
 	
@@ -594,7 +661,7 @@ module Alda
 		
 		# Underlines in +name+ is converted to hyphens.
 		def initialize name
-			@name = name.to_s.gsub ?_, ?-
+			@name = name.to_s.tr ?_, ?-
 		end
 		
 		def to_alda_code
@@ -611,7 +678,7 @@ module Alda
 		
 		# Underlines in +name+ is converted to hyphens.
 		def initialize name
-			@name = name.to_s.gsub ?_, ?-
+			@name = name.to_s.tr ?_, ?-
 		end
 		
 		def to_alda_code
@@ -623,8 +690,34 @@ module Alda
 	class Sequence < Event
 		include EventList
 		
+		module RefineFlatten
+			refine Array do
+				def flatten
+					each_with_object [] do |element, result|
+						if element.is_a? Array
+							result.push *element.flatten
+						else
+							result.push element
+						end
+					end
+				end
+			end
+		end
+		using RefineFlatten
+		
 		def to_alda_code
 			@events.to_alda_code
+		end
+		
+		def self.join *events
+			new do
+				@events = events.map do |event|
+					while event.is_a?(EventContainer) && !event.count && event.labels.empty?
+						event = event.event
+					end
+					event.is_a?(Sequence) ? event.events : event
+				end.flatten
+			end
 		end
 	end
 end

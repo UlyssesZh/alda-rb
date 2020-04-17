@@ -10,5 +10,5 @@ Alda::Score.new do
 		tempo tempo
 	end
 	tempos.keys.lazy.map { __send__ _1 }.inject :/
-	s{ e8; f; g }*99
+	(e8 f g)*99
 end.play
