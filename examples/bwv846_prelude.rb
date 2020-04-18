@@ -10,16 +10,18 @@ require 'alda-rb'
 # sheet music:
 # http://www.freesheetpianomusic.com/bach/content/Well-Tempered%20Clavier_Book_1/Prelude%20and%20Fugue%20No.1%20C%20major%20BWV%20846.pdf
 
-include Alda
-
-Score.new do
-	def Note.absolute event_list, pitch, duration
+class Alda::Sequence
+	def absolute pitch, duration
 		/(?<letter>[a-g][-+_]*)(?<octave>\d*)/ =~ pitch
-		octave = @last_octave ||= '4' if octave.empty?
-		event_list.events.push new "o#{@last_octave = octave} #{letter}", duration
+		octave = @@last_octave ||= '4' if octave.empty?
+		result = Alda::Note.new "o#{@@last_octave = octave} #{letter}", duration
+		@events.push result
+		result
 	end
-	
-	piano_; tempo 60
+end
+
+Alda::Score.new do
+	piano_ tempo 60
 	%w[
 		c e g c5 e
 		c4 d a d5 f
@@ -55,9 +57,9 @@ Score.new do
 		c2 c3 g b- e4
 	].each_slice 5 do |n1, n2, *notes|
 		s do
-			v1; Note.absolute self, n1, '2'
-			v2; r16; Note.absolute self, n2, '4..'
-			v3; r8; s{ notes.each { Note.absolute self, _1, '16' } }*2
+			v1 absolute n1, '2'
+			v2 r16 absolute n2, '4..'
+			v3 r8 s{ notes.each { absolute _1, '16' } }*2
 		end * 2
 	end
 	alda_code <<~ENDING

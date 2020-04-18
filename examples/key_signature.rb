@@ -8,7 +8,7 @@ Alda::Score.new do
 	
 	key_signature 'f+ c+ g+'
 	a8 b o! c d e f g a o?
-	a b o! c__ d e f__ g__ a o?
+	a b o! c_ d e f_ g_ a o?
 	
 	key_signature [:g, :minor]
 	g a b o! c! d e f! g o?

@@ -13,8 +13,8 @@ Alda::Score.new do
 		if rand < REST_RATE
 			pause ms.()
 			octave rand OCTAVE_UPPER
-			note pitch("abcdefg"[rand 7].to_sym,
-			           %i[sharp flat natural][rand 3]), ms.()
+			note pitch('abcdefg'[rand 7].to_sym,
+			           %i[sharp flat natural].sample), ms.()
 		end
 	end
 	

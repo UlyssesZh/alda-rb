@@ -1,3 +1,4 @@
+require 'set'
 require 'alda-rb/version'
 
 class Array
@@ -64,7 +65,7 @@ module Alda
 	#   Alda.parse code: 'bassoon: o3 c'
 	#   # => "{\"chord-mode\":false,\"current-instruments\":...}\n"
 	#   Alda.sandwich
-	#   # => Alda::CommandLineError (Expected a command, got sandwich)
+	#   # Alda::CommandLineError (Expected a command, got sandwich)
 	def self.method_missing name, *args, **opts
 		name = name.to_s.gsub ?_, ?-
 		opts.each do |key, val|
@@ -85,20 +86,57 @@ module Alda
 		status.include? 'down'
 	end
 	
-	# The error raised when one tries to run a non-existing subcommand
-	# of +alda+.
+	# The error is raised when one tries to
+	# run a non-existing subcommand of +alda+.
 	class CommandLineError < Exception
 		
 		# The <tt>Process::Status</tt> object representing the status of
 		# the process that runs +alda+ command.
-		attr_accessor :status
+		attr_reader :status
 		
 		# Create a CommandLineError# object.
 		# @param status The status of the process running +alda+ command.
 		# @param msg The exception message.
 		def initialize status, msg = nil
-			super msg
+			super /ERROR\s*(?<message>.*)$/ =~ msg ? message : msg&.lines(chomp: true).first
 			@status = status
+		end
+	end
+	
+	# This error is raised when one tries to
+	# append events in an EventList# in a wrong order.
+	# @example
+	#   Alda::Score.new do
+	#     motif = f4 f e e d d c2
+	#     g4 f e d c2 # It commented out, error will not occur
+	#     c4 c g g a a g2 motif # OrderError
+	#   end
+	class OrderError < Exception
+		
+		# The expected element gotten if it is of the correct order.
+		# @see #got
+		# @example
+		#   Alda::Score.new do
+		#     motif = f4 f e e d d c2
+		#     g4 f e d c2
+		#     p @events.size # => 2
+		#     c4 c g g a a g2 motif
+		#   rescue OrderError => e
+		#     p @events.size # => 1
+		#     p e.expected   # => #<Alda::EventContainer:...>
+		#     p e.got        # => #<Alda::EventContainer:...>
+		#   end
+		attr_reader :expected
+		
+		# The actually gotten element.
+		# For an example, see #expected.
+		# @see #expected
+		attr_reader :got
+		
+		def initialize expected, got
+			super 'events are out of order'
+			@expected = expected
+			@got = got
 		end
 	end
 	
@@ -111,35 +149,49 @@ module Alda
 		# most of which are EventContainer# objects.
 		attr_accessor :events
 		
+		# The set containing the available variable names.
+		attr_accessor :variables
+		
+		# The block to be executed.
+		attr_accessor :block
+		
+		def on_contained
+			instance_eval &@block if @block
+		end
+		
 		# Make the object have the ability to appending its +events+
 		# conveniently.
 		#
 		# Here is a list of sugar. When the name of a method meets certain
 		# condition, the method is regarded as an event appended to +events+.
 		#
-		# 1. Starting with 2 lowercase letters and
+		# 1. Ending with 2 underlines: set variable. See SetVariable#.
+		#
+		# 2. Starting with 2 lowercase letters and
 		#    ending with underline character: instrument. See Part#.
 		#
-		# 2. Starting with 2 lowercase letters: inline lisp code.
-		#    See InlineLisp#.
+		# 3. Starting with 2 lowercase letters: inline lisp code,
+		#    set variable, or get variable.
+		#    One of the above three is chosen intelligently.
+		#    See InlineLisp#, SetVariable#, GetVariable#.
 		#
-		# 3. Starting with "t": CRAM. See Cram#.
+		# 4. Starting with "t": CRAM. See Cram#.
 		#
-		# 4. Starting with one of "a", "b", ..., "g": note. See Note#.
+		# 5. Starting with one of "a", "b", ..., "g": note. See Note#.
 		#
-		# 5. Starting with "r": rest. See Rest#.
+		# 6. Starting with "r": rest. See Rest#.
 		#
-		# 6. "x": chord. See Chord#.
+		# 7. "x": chord. See Chord#.
 		#
-		# 7. "s": sequence. See Sequence#.
+		# 8. "s": sequence. See Sequence#.
 		#
-		# 8. Starting with "o": octave. See Octave#.
+		# 9. Starting with "o": octave. See Octave#.
 		#
-		# 9. Starting with "v": voice. See Voice#.
+		# 10. Starting with "v": voice. See Voice#.
 		#
-		# 10. Starting with "__" (2 underlines): at marker. See AtMarker#.
+		# 11. Starting with "__" (2 underlines): at marker. See AtMarker#.
 		#
-		# 11. Starting with "_" (underline): marker. See Marker#.
+		# 12. Starting with "_" (underline): marker. See Marker#.
 		#
 		# Notes cannot have dots.
 		# To tie multiple durations, +_+ is used instead of +~+.
@@ -151,16 +203,23 @@ module Alda
 		# @see #initialize.
 		# @return an EventContainer# object.
 		def method_missing name, *args, &block
+			if @parent&.respond_to? name, true
+				return @parent.__send__ name, *args, &block
+			end
 			sequence_sugar = ->event do
 				if args.size == 1
 					joined = args.first
-					raise unless @events.pop == joined
+					unless (got = @events.pop) == (expected = joined)
+						raise OrderError.new expected, got
+					end
 					Sequence.join event, joined
 				else
 					event
 				end
 			end
 			case
+			when /^(?<head>[a-z][a-z].*)__$/        =~ name
+				SetVariable.new head, *args, &block
 			when /^(?<part>[a-z][a-z].*)_$/         =~ name
 				if args.first.is_a? String
 					Part.new [part], args.first
@@ -168,7 +227,13 @@ module Alda
 					sequence_sugar.(Part.new [part])
 				end
 			when /^[a-z][a-z].*$/                   =~ name
-				InlineLisp.new name, *args
+				if block
+					SetVariable.new name, *args, &block
+				elsif has_variable?(name) && (args.empty? || args.size == 1 && args.first.is_a?(Event))
+					sequence_sugar.(GetVariable.new name)
+				else
+					InlineLisp.new name, *args
+				end
 			when /^t(?<duration>.*)$/               =~ name
 				Cram.new duration, &block
 			when /^(?<pitch>[a-g])(?<duration>.*)$/ =~ name
@@ -198,6 +263,10 @@ module Alda
 			end.tap &@events.method(:push)
 		end
 		
+		def has_variable? name
+			@variables.include?(name) || !!@parent&.has_variable?(name)
+		end
+		
 		# Append the events of another EventList# object here.
 		# This method covers the disadvantage of alda's being unable to
 		# import scores from other files.
@@ -209,18 +278,19 @@ module Alda
 		# @param block to be passed with the EventList# object as +self+.
 		# @example
 		#   Alda::Score.new do
-		#     tempo! 108   # inline lisp
-		#     piano_       # piano part
-		#     o4           # octave 4
-		#     c8; d; e; f  # notes
-		#     g4; g; a; f; g; e; f; d; e; c
-		#     d4_8         # cannot have '~', use '_' instead
-		#     o3 b8 o4 c2
+		#     tempo! 108           # inline lisp
+		#     piano_               # piano part
+		#     o4                   # octave 4
+		#     c8; d; e; f          # notes
+		#     g4 g a f g e f d e c # a sequence
+		#     d4_8                 # cannot have '~', use '_' instead
+		#     o3 b8 o4 c2          # a sequence
 		#   end
 		#   # => #<Alda::Score:0x... @events=[...]>
 		def initialize &block
 			@events ||= []
-			instance_eval &block if block
+			@variables ||= Set.new
+			@block ||= block
 		end
 		
 		# Same as #events
@@ -273,6 +343,11 @@ module Alda
 		def to_s
 			events_alda_codes
 		end
+		
+		def initialize(...)
+			super
+			on_contained
+		end
 	end
 	
 	# The class of elements of EventList#events.
@@ -289,8 +364,7 @@ module Alda
 		attr_accessor :container
 		
 		# The callback invoked when it is contained in an EventContainer#.
-		# It is overridden in InlineLisp#, so be aware if you want to
-		# override InlineLisp#on_contained.
+		# It is overridden in InlineLisp# and EventList#.
 		# @example
 		#   class Alda::Note
 		#     def on_contained
@@ -339,7 +413,9 @@ module Alda
 		#   Alda::Score.new { violin_/viola_/cello_; e; f; g}.play
 		#   # (plays notes E, F, G with three instruments simultaneously)
 		def / other
-			raise unless other == @parent.events.pop
+			unless (expected = other) == (got = @parent.events.pop)
+				raise OrderError.new expected, got
+			end
 			@event =
 					if @event.is_a? Part
 						Part.new @event.names + other.event.names, other.event.arg
@@ -366,7 +442,7 @@ module Alda
 		
 		# Marks alternative repetition.
 		def % labels
-			labels = [labels] unless labels.respond_to? :to_a
+			labels = [labels] unless labels.is_a? Array
 			@labels.replace labels.to_a
 			self
 		end
@@ -400,7 +476,7 @@ module Alda
 		
 		# The arguments passed to the lisp function.
 		# Its elements can be
-		# Array#, Hash#, Numeric#, String#, Symbol#, or InlineLisp#.
+		# Array#, Hash#, Numeric#, String#, Symbol#, or Event#.
 		attr_accessor :args
 		
 		# The underlines in +head+ will be converted to hyphens.
@@ -414,8 +490,11 @@ module Alda
 		end
 		
 		def on_contained
+			super
 			@args.reverse_each do |event|
-				raise if event.is_a?(Event) && event != @parent.events.pop
+				if event.is_a?(Event) && (expected = event) != (got = @parent.events.pop)
+					raise OrderError.new expected, got
+				end
 			end
 		end
 	end
@@ -431,6 +510,14 @@ module Alda
 		attr_accessor :duration
 		
 		# The underlines in +duration+ will be converted to +~+.
+		# Exclamation mark and question mark in +duration+
+		# will be interpreted as accidentals in #pitch.
+		#
+		# The number of underlines at the end of +duration+ means:
+		# neither natural nor slur if 0,
+		# natural if 1,
+		# slur if 2,
+		# both natural and slur if 3.
 		def initialize pitch, duration
 			@pitch = pitch.to_s
 			@duration = duration.to_s.gsub ?_, ?~
@@ -604,7 +691,9 @@ module Alda
 			@names.last.concat ?., str
 			if args.size == 1
 				joined = args.first
-				raise unless @parent.events.pop == joined
+				unless (got = @parent.events.pop) == (expected = joined)
+					raise OrderError.new expected, got
+				end
 				unless @container
 					@container = EventContainer.new nil, @parent
 					@parent.events.delete self
@@ -690,6 +779,14 @@ module Alda
 	class Sequence < Event
 		include EventList
 		
+		# Using this module can fix a bug of Array#flatten.
+		# @example
+		#   def (a = Object.new).method_missing(...)
+		#     Object.new
+		#   end
+		#   [a].flatten rescue $! # => #<TypeError:...>
+		#   using Alda::Sequence::RefineFlatten
+		#   [a].flatten # => [#<Object:...>]
 		module RefineFlatten
 			refine Array do
 				def flatten
@@ -709,6 +806,9 @@ module Alda
 			@events.to_alda_code
 		end
 		
+		# Creates a Sequence# object by joining +events+.
+		# The EventContainer# objects are extracted,
+		# and the Sequence# objects are flattened.
 		def self.join *events
 			new do
 				@events = events.map do |event|
@@ -718,6 +818,55 @@ module Alda
 					event.is_a?(Sequence) ? event.events : event
 				end.flatten
 			end
+		end
+	end
+	
+	# A set-variable event.
+	# Includes EventList#.
+	class SetVariable < Event
+		include EventList
+		
+		# The name of the variable.
+		attr_accessor :name
+		
+		# The events passed to it using arguments instead of a block.
+		attr_reader :original_events
+		
+		def initialize name, *events, &block
+			@name = name.to_sym
+			@original_events = events
+			@events = events.clone
+			super &block
+		end
+		
+		# Specially, the result ends with a newline.
+		def to_alda_code
+			"#@name = #{events_alda_codes}\n"
+		end
+		
+		def on_contained
+			super
+			@parent.variables.add @name
+			@original_events.reverse_each do |event|
+				unless (expected = event) == (got = @parent.events.pop)
+					raise OrderError.new expected, got
+				end
+			end
+		end
+	end
+	
+	# A get-variable event
+	class GetVariable < Event
+		
+		# The name of the variable
+		attr_accessor :name
+		
+		def initialize name
+			@name = name
+		end
+		
+		def to_alda_code
+			@name.to_s
 		end
 	end
 end
