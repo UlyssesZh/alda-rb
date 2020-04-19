@@ -520,26 +520,22 @@ module Alda
 		# both natural and slur if 3.
 		def initialize pitch, duration
 			@pitch = pitch.to_s
-			@duration = duration.to_s.gsub ?_, ?~
-			case (/(?<str>~*)$/ =~ @duration ? str.size : return)
-			when 0 # no slur or natural
-				case @duration[-1]
-				when ?! # sharp
-					@pitch.concat ?+
-					@duration[-1] = ''
-				when ?? # flat
-					@pitch.concat ?-
-					@duration[-1] = ''
-				end
-			when 1 # natural
-				@pitch.concat ?_
+			@duration = duration.to_s.tr ?_, ?~
+			case @duration[-1]
+			when ?! # sharp
+				@pitch.concat ?+
 				@duration[-1] = ''
-			when 2 # slur
+			when ?? # flat
+				@pitch.concat ?-
 				@duration[-1] = ''
-			when 3 # slur and natural
-				@pitch.concat ?_
-				@duration[@duration.size - 2..] = ''
 			end
+			waves = /(?<str>~+)$/ =~ @duration ? str.size : return
+			@duration[@duration.length - waves..] = ''
+			if waves >= 2
+				waves -= 2
+				@duration.concat ?~
+			end
+			@pitch.concat ?_ * waves
 		end
 		
 		# Append a sharp sign after #pitch.
