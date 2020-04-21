@@ -1,36 +1,20 @@
+require 'readline'
 require 'set'
+require 'irb/ruby-lex'
 require 'alda-rb/version'
 
-class Array
-	def to_alda_code
-		"[#{map(&:to_alda_code).join ' '}]"
-	end
-end
-class Hash
-	def to_alda_code
-		"{#{to_a.reduce(:+).map(&:to_alda_code).join ' '}}"
-	end
-end
-class String
-	def to_alda_code
-		inspect
-	end
-end
-class Symbol
-	def to_alda_code
-		?: + to_s
-	end
-end
-class Numeric
-	def to_alda_code
-		inspect
-	end
-end
-class Range
-	def to_alda_code
-		"#{first}-#{last}"
-	end
-end
+{
+	Array      => -> { "[#{map(&:to_alda_code).join ' '}]" },
+	Hash       => -> { "{#{to_a.reduce(:+).map(&:to_alda_code).join ' '}}" },
+	String     => -> { inspect },
+	Symbol     => -> { ?: + to_s },
+	Numeric    => -> { inspect },
+	Range      => -> { "#{first}-#{last}" },
+	TrueClass  => -> { 'true' },
+	FalseClass => -> { 'false' },
+	NilClass   => -> { 'nil' }
+}.each { |klass, block| klass.define_method :to_alda_code, &block }
+
 class Proc
 	# Runs +self+ for +n+ times.
 	def * n
@@ -84,6 +68,123 @@ module Alda
 	# @return Whether the alda server is down.
 	def self.down?
 		status.include? 'down'
+	end
+	
+	# Start a REPL session.
+	def self.repl
+		REPLSession.run
+	end
+	
+	# An encapsulation for the REPL session for alda-rb.
+	module REPLSession
+		
+		# Initialization. It is called automatically when starting
+		# the session if it has not been executed yet.
+		def self.init
+			@score = Score.new
+			@lex = RubyLex.new
+			@prompt = ''
+			@initialized = true
+		end
+		
+		# Start a session. The main loop is not included here.
+		# Sets @need_print to true.
+		def self.start
+			init unless @initialized
+			if Alda.down?
+				puts 'Starting Alda server...'
+				Alda.up
+			end
+			@io = IO.popen [Alda.executable, 'repl'], 'r+'
+			@need_print = false
+			nil
+		end
+		
+		# Runs the session. Includes the start, the main loop, and the termination.
+		def self.run
+			start
+			while scan_for_prompt
+				case process_rb_code rb_code
+				when :break
+					break
+				when :redo
+					redo
+				when :next
+					next
+				end
+			end
+			terminate
+		end
+		
+		# Scans for the next input prompt in the alda repl session.
+		# Outputs the scaned result if @need_print is true.
+		# Sets @need_print to true.
+		def self.scan_for_prompt
+			caught = ''
+			result = @io.each_char.each_cons 2 do |last, current|
+				caught.concat last
+				if last == ?> && current == ' '
+					caught.concat current
+					@prompt = caught.lines(chomp: true).last
+					caught[-1] = '' until caught[-1] == ?\n || caught.empty?
+					break true
+				elsif last == ?o && current == ?\n
+					@io.print ?y
+					return false
+				end
+			end
+			result = false if result != true
+			$stdout.print caught if @need_print
+			@need_print = true
+			result
+		end
+		
+		# Reads the next Ruby codes input in the REPL session.
+		# It can intelligently continue reading if the code is not complete yet.
+		def self.rb_code
+			result = ''
+			begin
+				@io.print ''
+				buf = Readline.readline @prompt, true
+				return unless buf
+				result.concat buf, ?\n
+				ltype, indent, continue, block_open = @lex.check_state result
+			rescue Interrupt
+				$stdout.puts
+				retry
+			end while ltype || indent.nonzero? || continue || block_open
+			result
+		end
+		
+		# Processes the Ruby codes read.
+		# Sending it to a score and sending the result to alda.
+		# @return One of <tt>:break</tt>, <tt>:next</tt>, or <tt>:redo</tt>.
+		def self.process_rb_code code
+			return :break unless code
+			unless code[0] == ?:
+				@score.clear
+				begin
+					@score.get_binding.eval code
+				rescue StandardError, ScriptError => e
+					$stderr.print e.full_message
+				rescue Interrupt
+					return :redo
+				rescue SystemExit
+					return :break
+				end
+				code = @score.events_alda_codes
+				$stdout.puts code
+			end
+			@io.puts code
+			@io.gets
+			:next
+		end
+		
+		# Termination of the REPL session.
+		def self.terminate
+			@io.close
+			Readline::HISTORY.clear
+		end
 	end
 	
 	# The error is raised when one tries to
@@ -152,9 +253,6 @@ module Alda
 		# The set containing the available variable names.
 		attr_accessor :variables
 		
-		# The block to be executed.
-		attr_accessor :block
-		
 		def on_contained
 			instance_eval &@block if @block
 		end
@@ -218,15 +316,15 @@ module Alda
 				end
 			end
 			case
-			when /^(?<head>[a-z][a-z].*)__$/        =~ name
+			when /\A(?<head>[a-z][a-z].*)__\z/        =~ name
 				SetVariable.new head, *args, &block
-			when /^(?<part>[a-z][a-z].*)_$/         =~ name
+			when /\A(?<part>[a-z][a-z].*)_\z/         =~ name
 				if args.first.is_a? String
 					Part.new [part], args.first
 				else
 					sequence_sugar.(Part.new [part])
 				end
-			when /^[a-z][a-z].*$/                   =~ name
+			when /\A[a-z][a-z].*\z/                   =~ name
 				if block
 					SetVariable.new name, *args, &block
 				elsif has_variable?(name) && (args.empty? || args.size == 1 && args.first.is_a?(Event))
@@ -234,27 +332,27 @@ module Alda
 				else
 					InlineLisp.new name, *args
 				end
-			when /^t(?<duration>.*)$/               =~ name
+			when /\At(?<duration>.*)\z/               =~ name
 				Cram.new duration, &block
-			when /^(?<pitch>[a-g])(?<duration>.*)$/ =~ name
+			when /\A(?<pitch>[a-g])(?<duration>.*)\z/ =~ name
 				sequence_sugar.(Note.new pitch, duration)
-			when /^r(?<duration>.*)$/               =~ name
+			when /\Ar(?<duration>.*)\z/               =~ name
 				sequence_sugar.(Rest.new duration)
-			when /^x$/                              =~ name
+			when /\Ax\z/                              =~ name
 				Chord.new &block
-			when /^s$/                              =~ name
+			when /\As\z/                              =~ name
 				Sequence.new *args, &block
-			when /^o!$/                             =~ name
+			when /\Ao!\z/                             =~ name
 				sequence_sugar.(Octave.new('').tap { _1.up_or_down = 1})
-			when /^o\?$/                            =~ name
+			when /\Ao\?\z/                            =~ name
 				sequence_sugar.(Octave.new('').tap { _1.up_or_down = -1})
-			when /^o(?<num>\d*)$/                   =~ name
+			when /\Ao(?<num>\d*)\z/                   =~ name
 				sequence_sugar.(Octave.new num)
-			when /^v(?<num>\d+)$/                   =~ name
+			when /\Av(?<num>\d+)\z/                   =~ name
 				sequence_sugar.(Voice.new num)
-			when /^__(?<head>.+)$/                  =~ name
+			when /\A__(?<head>.+)\z/                  =~ name
 				sequence_sugar.(AtMarker.new head)
-			when /^_(?<head>.+)$/                   =~ name
+			when /\A_(?<head>.+)\z/                   =~ name
 				sequence_sugar.(Marker.new head)
 			else
 				super
@@ -347,6 +445,18 @@ module Alda
 		def initialize(...)
 			super
 			on_contained
+		end
+		
+		# Clears all the events and variables.
+		def clear
+			@events.clear
+			@variables.clear
+			self
+		end
+		
+		# @return A Binding# object.
+		def get_binding
+			binding
 		end
 	end
 	
@@ -529,7 +639,7 @@ module Alda
 				@pitch.concat ?-
 				@duration[-1] = ''
 			end
-			waves = /(?<str>~+)$/ =~ @duration ? str.size : return
+			waves = /(?<str>~+)\z/ =~ @duration ? str.size : return
 			@duration[@duration.length - waves..] = ''
 			if waves >= 2
 				waves -= 2
