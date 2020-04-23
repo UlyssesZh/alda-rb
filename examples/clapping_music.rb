@@ -19,6 +19,6 @@ Alda::Score.new do
 	
 	tempo! 172
 	midi_percussion_ o2 set_note_length 8
-	v1; s{ play }*(12*13)
+	v1; s{ play }*12*13
 	v2; 13.times { s{ play; pattern.rotate! }*12 }
 end.play

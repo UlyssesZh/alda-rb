@@ -1,12 +1,13 @@
 require 'readline'
 require 'set'
+require 'stringio'
 require 'irb/ruby-lex'
 require 'alda-rb/version'
 
 {
 	Array      => -> { "[#{map(&:to_alda_code).join ' '}]" },
 	Hash       => -> { "{#{to_a.reduce(:+).map(&:to_alda_code).join ' '}}" },
-	String     => -> { inspect },
+	String     => -> { dump },
 	Symbol     => -> { ?: + to_s },
 	Numeric    => -> { inspect },
 	Range      => -> { "#{first}-#{last}" },
@@ -26,19 +27,23 @@ class Proc
 	end
 end
 
+class StringIO
+	# Equivalent to #string.
+	def to_s
+		string
+	end
+end
+
 # The module serving as a namespace.
 module Alda
 	
-	# The path to the +alda+ executable.
+	# The array of available subcommands of alda executable.
 	#
-	# The default value is <tt>"alda"</tt>,
-	# which will depend on your PATH.
-	singleton_class.attr_accessor :executable
-	@executable = 'alda'
-	
-	# The method give Alda# ability to invoke +alda+ at the command line,
-	# using +name+ as subcommand and +args+ as arguments.
-	# +opts+ are converted to command line options.
+	# Alda# is able to invoke +alda+ at the command line.
+	# The subcommand is the name of the method invoked upon Alda#.
+	#
+	# The first argument (a hash) is interpreted as the options.
+	# The keyword arguments are interpreted as the subcommand options.
 	#
 	# The return value is the string output by the command in STDOUT.
 	#
@@ -48,197 +53,47 @@ module Alda
 	#   # => "Client version: 1.4.0\nServer version: [27713] 1.4.0\n"
 	#   Alda.parse code: 'bassoon: o3 c'
 	#   # => "{\"chord-mode\":false,\"current-instruments\":...}\n"
-	#   Alda.sandwich
-	#   # Alda::CommandLineError (Expected a command, got sandwich)
-	def self.method_missing name, *args, **opts
-		name = name.to_s.gsub ?_, ?-
-		opts.each do |key, val|
-			args.push "--#{key.to_s.gsub ?_, ?-}", val.to_s
+	COMMANDS = %i[
+		help update repl up start_server init down stop_server
+		downup restart_server list status version play stop parse
+		instruments export
+	].freeze
+	
+	COMMANDS.each do |command|
+		define_method command do |options = {}, **command_options|
+			args = []
+			block = ->key, val { args.push "--#{key.to_s.tr ?_, ?-}", val.to_s }
+			options.each &block
+			args.push command.to_s
+			command_options.each &block
+			output = IO.popen [Alda.executable, *args], &:read
+			raise CommandLineError.new $?, output if $?.exitstatus.nonzero?
+			output
 		end
-		output = IO.popen [executable, name, *args], &:read
-		raise CommandLineError.new $?, output if $?.exitstatus.nonzero?
-		output
 	end
 	
+	# The path to the +alda+ executable.
+	#
+	# The default value is <tt>"alda"</tt>,
+	# which will depend on your PATH.
+	singleton_class.attr_accessor :executable
+	@executable = 'alda'
+	
 	# @return Whether the alda server is up.
-	def self.up?
+	def up?
 		status.include? 'up'
 	end
 	
 	# @return Whether the alda server is down.
-	def self.down?
+	def down?
 		status.include? 'down'
 	end
 	
+	module_function :up?, :down?, *COMMANDS
+	
 	# Start a REPL session.
 	def self.repl
-		REPLSession.run
-	end
-	
-	# An encapsulation for the REPL session for alda-rb.
-	module REPLSession
-		
-		# Initialization. It is called automatically when starting
-		# the session if it has not been executed yet.
-		def self.init
-			@score = Score.new
-			@lex = RubyLex.new
-			@prompt = ''
-			@initialized = true
-		end
-		
-		# Start a session. The main loop is not included here.
-		# Sets @need_print to true.
-		def self.start
-			init unless @initialized
-			if Alda.down?
-				puts 'Starting Alda server...'
-				Alda.up
-			end
-			@io = IO.popen [Alda.executable, 'repl'], 'r+'
-			@need_print = false
-			nil
-		end
-		
-		# Runs the session. Includes the start, the main loop, and the termination.
-		def self.run
-			start
-			while scan_for_prompt
-				case process_rb_code rb_code
-				when :break
-					break
-				when :redo
-					redo
-				when :next
-					next
-				end
-			end
-			terminate
-		end
-		
-		# Scans for the next input prompt in the alda repl session.
-		# Outputs the scaned result if @need_print is true.
-		# Sets @need_print to true.
-		def self.scan_for_prompt
-			caught = ''
-			result = @io.each_char.each_cons 2 do |last, current|
-				caught.concat last
-				if last == ?> && current == ' '
-					caught.concat current
-					@prompt = caught.lines(chomp: true).last
-					caught[-1] = '' until caught[-1] == ?\n || caught.empty?
-					break true
-				elsif last == ?o && current == ?\n
-					@io.print ?y
-					return false
-				end
-			end
-			result = false if result != true
-			$stdout.print caught if @need_print
-			@need_print = true
-			result
-		end
-		
-		# Reads the next Ruby codes input in the REPL session.
-		# It can intelligently continue reading if the code is not complete yet.
-		def self.rb_code
-			result = ''
-			begin
-				@io.print ''
-				buf = Readline.readline @prompt, true
-				return unless buf
-				result.concat buf, ?\n
-				ltype, indent, continue, block_open = @lex.check_state result
-			rescue Interrupt
-				$stdout.puts
-				retry
-			end while ltype || indent.nonzero? || continue || block_open
-			result
-		end
-		
-		# Processes the Ruby codes read.
-		# Sending it to a score and sending the result to alda.
-		# @return One of <tt>:break</tt>, <tt>:next</tt>, or <tt>:redo</tt>.
-		def self.process_rb_code code
-			return :break unless code
-			unless code[0] == ?:
-				@score.clear
-				begin
-					@score.get_binding.eval code
-				rescue StandardError, ScriptError => e
-					$stderr.print e.full_message
-				rescue Interrupt
-					return :redo
-				rescue SystemExit
-					return :break
-				end
-				code = @score.events_alda_codes
-				$stdout.puts code
-			end
-			@io.puts code
-			@io.gets
-			:next
-		end
-		
-		# Termination of the REPL session.
-		def self.terminate
-			@io.close
-			Readline::HISTORY.clear
-		end
-	end
-	
-	# The error is raised when one tries to
-	# run a non-existing subcommand of +alda+.
-	class CommandLineError < Exception
-		
-		# The <tt>Process::Status</tt> object representing the status of
-		# the process that runs +alda+ command.
-		attr_reader :status
-		
-		# Create a CommandLineError# object.
-		# @param status The status of the process running +alda+ command.
-		# @param msg The exception message.
-		def initialize status, msg = nil
-			super /ERROR\s*(?<message>.*)$/ =~ msg ? message : msg&.lines(chomp: true).first
-			@status = status
-		end
-	end
-	
-	# This error is raised when one tries to
-	# append events in an EventList# in a wrong order.
-	# @example
-	#   Alda::Score.new do
-	#     motif = f4 f e e d d c2
-	#     g4 f e d c2 # It commented out, error will not occur
-	#     c4 c g g a a g2 motif # OrderError
-	#   end
-	class OrderError < Exception
-		
-		# The expected element gotten if it is of the correct order.
-		# @see #got
-		# @example
-		#   Alda::Score.new do
-		#     motif = f4 f e e d d c2
-		#     g4 f e d c2
-		#     p @events.size # => 2
-		#     c4 c g g a a g2 motif
-		#   rescue OrderError => e
-		#     p @events.size # => 1
-		#     p e.expected   # => #<Alda::EventContainer:...>
-		#     p e.got        # => #<Alda::EventContainer:...>
-		#   end
-		attr_reader :expected
-		
-		# The actually gotten element.
-		# For an example, see #expected.
-		# @see #expected
-		attr_reader :got
-		
-		def initialize expected, got
-			super 'events are out of order'
-			@expected = expected
-			@got = got
-		end
+		REPL.new.run
 	end
 	
 	# Including this module can make your class have the ability
@@ -416,7 +271,6 @@ module Alda
 		#   Alda::Score.new { piano_; c; d; e }.play from: 1
 		#   # (plays only an E note)
 		def play **opts
-			Alda.stop
 			Alda.play code: self, **opts
 		end
 		
@@ -438,10 +292,24 @@ module Alda
 			Alda.export code: self, **opts
 		end
 		
+		# Saves the alda codes into a file.
+		def save filename
+			File.open(filename, 'w') { _1.puts to_s }
+		end
+		
+		# Loads alda codes from a file.
+		def load filename
+			event = InlineLisp.new :alda_code, File.read(filename)
+			@events.push event
+			event
+		end
+		
+		# @return Alda codes.
 		def to_s
 			events_alda_codes
 		end
 		
+		# The initialization.
 		def initialize(...)
 			super
 			on_contained
@@ -453,10 +321,182 @@ module Alda
 			@variables.clear
 			self
 		end
+	end
+	
+	# An encapsulation for the REPL session for alda-rb.
+	class REPL
 		
-		# @return A Binding# object.
-		def get_binding
-			binding
+		# The score object used in REPL.
+		# Includes Alda#, so it can refer to alda commandline.
+		class TempScore < Score
+			include Alda
+			
+			Score.instance_methods(false).each do |meth|
+				define_method meth, Score.instance_method(meth)
+			end
+			
+			def initialize session
+				super()
+				@session = session
+			end
+			
+			def to_s
+				history
+			end
+			
+			def history
+				@session.history.to_s
+			end
+			
+			def get_binding
+				binding
+			end
+			
+			alias quit exit
+		end
+		
+		# The history.
+		attr_reader :history
+		
+		# Initialization.
+		def initialize
+			@score = TempScore.new self
+			@binding = @score.get_binding
+			@lex = RubyLex.new
+			@history = StringIO.new
+		end
+		
+		# Runs the session. Includes the start, the main loop, and the termination.
+		def run
+			start
+			while code = rb_code
+				break unless process_rb_code code
+			end
+			terminate
+		end
+		
+		# Starts the session.
+		def start
+		end
+		
+		# Reads the next Ruby codes input in the REPL session.
+		# It can intelligently continue reading if the code is not complete yet.
+		def rb_code
+			result = ''
+			begin
+				buf = Readline.readline '> ', true
+				return unless buf
+				result.concat buf, ?\n
+				ltype, indent, continue, block_open = @lex.check_state result
+			rescue Interrupt
+				$stdout.puts
+				retry
+			end while ltype || indent.nonzero? || continue || block_open
+			result
+		end
+		
+		# Processes the Ruby codes read.
+		# Sending it to a score and sending the result to alda.
+		# @return +true+ for continue looping, +false+ for breaking the loop.
+		def process_rb_code code
+			@score.clear
+			begin
+				@binding.eval code
+			rescue StandardError, ScriptError => e
+				$stderr.print e.full_message
+				return true
+			rescue Interrupt
+				return true
+			rescue SystemExit
+				return false
+			end
+			code = @score.events_alda_codes
+			unless code.empty?
+				$stdout.puts code
+				play_score code
+			end
+			true
+		end
+		
+		# Tries to run the block and rescue CommandLineError#.
+		def try_command # :block:
+			begin
+				yield
+			rescue CommandLineError => e
+				puts e
+			end
+		end
+		
+		# Plays the score.
+		def play_score code
+			try_command do
+				Alda.play code: code, history: @history
+				@history.puts code
+			end
+		end
+		
+		# Terminates the REPL session.
+		def terminate
+			clear_history
+		end
+		
+		# Clears the history.
+		def clear_history
+			@history = StringIO.new
+		end
+	end
+	
+	# The error is raised when one tries to
+	# run a non-existing subcommand of +alda+.
+	class CommandLineError < Exception
+		
+		# The <tt>Process::Status</tt> object representing the status of
+		# the process that runs +alda+ command.
+		attr_reader :status
+		
+		# Create a CommandLineError# object.
+		# @param status The status of the process running +alda+ command.
+		# @param msg The exception message.
+		def initialize status, msg = nil
+			super /ERROR\s*(?<message>.*)$/ =~ msg ? message : msg&.lines(chomp: true).first
+			@status = status
+		end
+	end
+	
+	# This error is raised when one tries to
+	# append events in an EventList# in a wrong order.
+	# @example
+	#   Alda::Score.new do
+	#     motif = f4 f e e d d c2
+	#     g4 f e d c2 # It commented out, error will not occur
+	#     c4 c g g a a g2 motif # OrderError
+	#   end
+	class OrderError < Exception
+		
+		# The expected element gotten if it is of the correct order.
+		# @see #got
+		# @example
+		#   Alda::Score.new do
+		#     motif = f4 f e e d d c2
+		#     g4 f e d c2
+		#     p @events.size # => 2
+		#     c4 c g g a a g2 motif
+		#   rescue OrderError => e
+		#     p @events.size # => 1
+		#     p e.expected   # => #<Alda::EventContainer:...>
+		#     p e.got        # => #<Alda::EventContainer:...>
+		#   end
+		attr_reader :expected
+		
+		# The actually gotten element.
+		# For an example, see #expected.
+		# @see #expected
+		attr_reader :got
+		
+		def initialize expected, got
+			super 'events are out of order'
+			@expected = expected
+			@got = got
 		end
 	end
 	
@@ -546,7 +586,7 @@ module Alda
 		
 		# Marks repetition.
 		def * num
-			@count = num
+			@count = (@count || 1) * num
 			self
 		end
 		
