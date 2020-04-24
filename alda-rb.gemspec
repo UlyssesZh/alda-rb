@@ -6,7 +6,7 @@ Gem::Specification.new do |spec|
   spec.name          = "alda-rb"
   spec.version       = Alda::VERSION
   spec.authors       = ["Ulysses Zhan"]
-  spec.email         = ["2938747508@qq.com"]
+  spec.email         = ["UlyssesZhan@gmail.com"]
 
   spec.summary       = %q{A Ruby library for live-coding music with Alda.}
   # spec.description   = %q{TODO: Write a longer description or delete this line.}
@@ -18,7 +18,7 @@ Gem::Specification.new do |spec|
 
   spec.metadata["homepage_uri"] = spec.homepage
   spec.metadata["source_code_uri"] = spec.homepage
-  # spec.metadata["changelog_uri"] = "TODO: Put your gem's CHANGELOG.md URL here."
+  spec.metadata["changelog_uri"] = "https://github.com/UlyssesZh/alda-rb/releases"
 
   # Specify which files should be added to the gem when it is released.
   # The `git ls-files -z` loads the files in the RubyGem that have been added into git.

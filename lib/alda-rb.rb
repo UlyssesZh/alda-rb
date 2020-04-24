@@ -3,6 +3,7 @@ require 'set'
 require 'stringio'
 require 'irb/ruby-lex'
 require 'alda-rb/version'
+require 'colorize'
 
 {
 	Array      => -> { "[#{map(&:to_alda_code).join ' '}]" },
@@ -34,6 +35,18 @@ class StringIO
 	end
 end
 
+module Kernel
+	# Runs the alda command.
+	# Does not capture output.
+	# @example
+	#   alda 'version'
+	#   alda 'play', '-c', 'piano: a'
+	#   alda 'repl'
+	def alda *args
+		system Alda.executable, *args
+	end
+end
+
 # The module serving as a namespace.
 module Alda
 	
@@ -60,15 +73,25 @@ module Alda
 	].freeze
 	
 	COMMANDS.each do |command|
-		define_method command do |options = {}, **command_options|
-			args = []
-			block = ->key, val { args.push "--#{key.to_s.tr ?_, ?-}", val.to_s }
-			options.each &block
+		define_method command do |*args, **opts|
+			block = ->key, val do
+				next unless val
+				args.push "--#{key.to_s.tr ?_, ?-}"
+				args.push val.to_s unless val == true
+			end
+			# executable
+			args.unshift Alda.executable
+			args.map! &:to_s
+			# options
+			Alda.options.each &block
+			# subcommand
 			args.push command.to_s
-			command_options.each &block
-			output = IO.popen [Alda.executable, *args], &:read
-			raise CommandLineError.new $?, output if $?.exitstatus.nonzero?
-			output
+			# subcommand options
+			opts.each &block
+			# subprocess
+			IO.popen(args, &:read).tap do
+				raise CommandLineError.new $?, _1 if $?.exitstatus.nonzero?
+			end
 		end
 	end
 	
@@ -78,6 +101,9 @@ module Alda
 	# which will depend on your PATH.
 	singleton_class.attr_accessor :executable
 	@executable = 'alda'
+	
+	singleton_class.attr_reader :options
+	@options = {}
 	
 	# @return Whether the alda server is up.
 	def up?
@@ -94,6 +120,18 @@ module Alda
 	# Start a REPL session.
 	def self.repl
 		REPL.new.run
+	end
+	
+	# Sets the options of alda command.
+	# Not the subcommand options.
+	def self.[] **opts
+		@options.merge! opts
+		self
+	end
+	
+	# Clears the command line options.
+	def self.clear_options
+		@options.clear
 	end
 	
 	# Including this module can make your class have the ability
@@ -348,6 +386,10 @@ module Alda
 				@session.history.to_s
 			end
 			
+			def clear_history
+				@session.clear_history
+			end
+			
 			def get_binding
 				binding
 			end
@@ -384,7 +426,7 @@ module Alda
 		def rb_code
 			result = ''
 			begin
-				buf = Readline.readline '> ', true
+				buf = Readline.readline '> '.green, true
 				return unless buf
 				result.concat buf, ?\n
 				ltype, indent, continue, block_open = @lex.check_state result
@@ -412,7 +454,7 @@ module Alda
 			end
 			code = @score.events_alda_codes
 			unless code.empty?
-				$stdout.puts code
+				$stdout.puts code.yellow
 				play_score code
 			end
 			true
@@ -423,7 +465,7 @@ module Alda
 			begin
 				yield
 			rescue CommandLineError => e
-				puts e
+				puts e.message.red
 			end
 		end
 		
@@ -448,17 +490,32 @@ module Alda
 	
 	# The error is raised when one tries to
 	# run a non-existing subcommand of +alda+.
-	class CommandLineError < Exception
+	class CommandLineError < StandardError
 		
 		# The <tt>Process::Status</tt> object representing the status of
 		# the process that runs +alda+ command.
 		attr_reader :status
 		
+		# The port on which the problematic Alda server runs.
+		# @example
+		#   begin
+		#     Alda.play({port: 1108}, code: "y")
+		#   rescue CommandLineError => e
+		#     e.port # => 1108
+		#   end
+		attr_reader :port
+		
 		# Create a CommandLineError# object.
 		# @param status The status of the process running +alda+ command.
 		# @param msg The exception message.
 		def initialize status, msg = nil
-			super /ERROR\s*(?<message>.*)$/ =~ msg ? message : msg&.lines(chomp: true).first
+			if match = msg&.match(/^\[(?<port>\d+)\]\sERROR\s(?<message>.*)$/)
+				super match[:message]
+				@port = match[:port].to_i
+			else
+				super msg
+				@port = nil
+			end
 			@status = status
 		end
 	end
@@ -469,9 +526,9 @@ module Alda
 	#   Alda::Score.new do
 	#     motif = f4 f e e d d c2
 	#     g4 f e d c2 # It commented out, error will not occur
-	#     c4 c g g a a g2 motif # OrderError
+	#     c4 c g g a a g2 motif # (OrderError)
 	#   end
-	class OrderError < Exception
+	class OrderError < StandardError
 		
 		# The expected element gotten if it is of the correct order.
 		# @see #got
