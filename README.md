@@ -1,7 +1,7 @@
-# Alda-rb
+# alda-rb
 
 A Ruby library for live-coding music with [Alda](https://alda.io/).
-Also provides an Alda DSL in Ruby.
+Also provides an alda DSL in Ruby.
 
 ## Installation
 

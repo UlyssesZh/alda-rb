@@ -1,19 +1,103 @@
 require 'stringio'
 
-# Define #to_alda_code
-{
-		Array      => -> { "[#{map(&:to_alda_code).join ' '}]" },
-		Hash       => -> { "{#{to_a.reduce(:+).map(&:to_alda_code).join ' '}}" },
-		String     => -> { dump },
-		Symbol     => -> { ?: + to_s },
-		Numeric    => -> { inspect },
-		Range      => -> { "#{first}-#{last}" },
-		TrueClass  => -> { 'true' },
-		FalseClass => -> { 'false' },
-		NilClass   => -> { 'nil' }
-}.each { |klass, block| klass.define_method :to_alda_code, &block }
+class Array
+	
+	def to_alda_code
+		"[#{map(&:to_alda_code).join ' '}]"
+	end
+	
+	def detach_from_parent
+		reverse_each &:detach_from_parent
+	end
+end
+
+class Hash
+	
+	def to_alda_code
+		"[#{map(&:to_alda_code).join ' '}]"
+	end
+	
+	def detach_from_parent
+		each.reverse_each &:detach_from_parent
+	end
+end
+
+class String
+	
+	def to_alda_code
+		dump
+	end
+	
+	def detach_from_parent
+	end
+end
+
+class Symbol
+	
+	def to_alda_code
+		?: + to_s
+	end
+	
+	def detach_from_parent
+	end
+end
+
+class Numeric
+	
+	def to_alda_code
+		inspect
+	end
+	
+	def detach_from_parent
+	end
+end
+
+class Range
+	
+	def to_alda_code
+		"#{first}-#{last}"
+	end
+	
+	def detach_from_parent
+	end
+end
+
+class TrueClass
+	
+	def to_alda_code
+		'true'
+	end
+	
+	def detach_from_parent
+	end
+end
+
+class FalseClass
+	
+	def to_alda_code
+		'false'
+	end
+	
+	def detach_from_parent
+	end
+end
+
+class NilClass
+	
+	def to_alda_code
+		'nil'
+	end
+	
+	def detach_from_parent
+	end
+end
 
 class Proc
+	
+	##
+	# :call-seq:
+	#   proc * n -> n
+	#
 	# Runs +self+ for +n+ times.
 	def * n
 		if !lambda? || arity == 1
@@ -25,7 +109,12 @@ class Proc
 end
 
 class StringIO
-	# Equivalent to #string.
+	
+	##
+	# :call-seq:
+	#   to_s() -> String
+	#
+	# Equivalent to <tt>string</tt>.
 	def to_s
 		string
 	end

@@ -3,66 +3,72 @@
 require "test_helper"
 
 class Alda::Test < Minitest::Test
-	def test_version_number
-		refute_nil ::Alda::VERSION
+	
+	# Transform a score's block into string.
+	def q &block
+		Alda::Score.new(&block).to_s
 	end
 	
 	def test_sequence
 		assert_equal '[c d e]',
-		             Alda::Score.new { c d e }.events_alda_codes
+		             q { c d e }
 		assert_equal '[c d e]',
-		             Alda::Score.new { s { c; d; e } }.events_alda_codes
+		             q { s { c; d; e } }
 	end
 	
 	def test_chord
 		assert_equal 'c/d/e',
-		             Alda::Score.new { c/d/e }.events_alda_codes
+		             q { c/d/e }
 		assert_equal 'c/d/e',
-		             Alda::Score.new { x { c/d/e } }.events_alda_codes
+		             q { x { c/d/e } }
 	end
 	
 	def test_accidentals_and_slur
 		assert_equal '[c+ d- e_ f~ g+~ a-~ b_~]',
-		             Alda::Score.new { c! d? e_ f__ g__! a__? b___ }.events_alda_codes
+		             q { c! d? e_ f__ g__! a__? b___ }
 	end
 	
 	def test_marker
 		assert_equal '[%mm @mm]',
-		             Alda::Score.new { _mm __mm }.events_alda_codes
+		             q { _mm __mm }
 	end
 	
 	def test_inline_lisp
 		assert_equal '(aa (bb (cc (dd 1))) (ee (ff (gg :c))))',
-		             Alda::Score.new { aa bb(cc dd 1), ee(ff gg :c) }.events_alda_codes
+		             q { aa bb(cc dd 1), ee(ff gg :c) }
+		assert_equal '(ee [(aa ) (bb ) (cc (dd ))])',
+		             q { ee [aa, bb, cc(dd)] }
+		assert_equal '(defn [x] (inc x))',
+		             q { defn [_x_], inc(_x_) }
 	end
 	
 	def test_variable
 		assert_equal "var = [c d e]\n var",
-		             Alda::Score.new { var__ c d e; var }.events_alda_codes
+		             q { var__ c d e; var }
 		assert_equal "var = [c d e]\n var",
-		             Alda::Score.new { var { c d e }; var }.events_alda_codes
+		             q { var { c d e }; var }
 		assert_equal "var = c d e\n var",
-		             Alda::Score.new { var__ c, d, e; var }.events_alda_codes
+		             q { var__ c, d, e; var }
 	end
 	
 	def test_alternate_endings
 		assert_equal "[a'1 b'2]*2",
-		             Alda::Score.new { s { a%1; b%2 }*2 }.events_alda_codes
+		             q { s { a%1; b%2 }*2 }
 	end
 	
 	def test_part
 		assert_equal '[piano: violin "vio":]',
-		             Alda::Score.new { piano_ violin_ 'vio' }.events_alda_codes
+		             q { piano_ violin_ 'vio' }
 		assert_equal 'cello/violin:',
-		             Alda::Score.new { cello_/violin_ }.events_alda_codes
+		             q { cello_/violin_ }
 		assert_equal 'cello/violin "str": str.cello:',
-		             Alda::Score.new { cello_/violin_('str'); str_.cello_ }.events_alda_codes
-		assert_equal '[str.cello: c d]',
-		             Alda::Score.new { str_.cello_ c d }.events_alda_codes
+		             q { cello_/violin_('str'); str_.cello_ }
+		assert_equal '[e str.cello: c d str.violin:]',
+		             q { e str_.cello_ c d str_.violin_ }
 	end
 	
 	def test_voice
 		assert_equal '[V1: V2: V0:]',
-		             Alda::Score.new { v1 v2 v0 }.events_alda_codes
+		             q { v1 v2 v0 }
 	end
 end
