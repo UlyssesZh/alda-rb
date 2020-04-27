@@ -5,6 +5,9 @@ require 'readline'
 require 'stringio'
 
 ##
+# :call-seq:
+#   repl() -> nil
+#
 # Start a REPL session.
 def Alda.repl
 	Alda::REPL.new.run

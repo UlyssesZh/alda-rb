@@ -5,4 +5,4 @@ set -vx
 
 bundle install
 
-rdoc -w 2
+rake rdoc

@@ -564,8 +564,8 @@ class Alda::Chord < Alda::Event
 	# :call-seq:
 	#   new(*events, &block) -> Alda::Chord
 	#
-	# <tt>Alda::EventList#x</tt> (an event list sugar)
-	# invokes this method, see Alda::EventList#method_missing.
+	# There is an event list sugar invoking this method.
+	# See Alda::EventList#method_missing.
 	#
 	# In most cases, +events+ should be empty.
 	# Note that +events+ cannot be specified using the sugar.
@@ -584,7 +584,37 @@ class Alda::Chord < Alda::Event
 end
 
 ##
-# A part event.
+# A part event. An Alda::EventContainer containing an
+# Alda::Part can be derived using event list sugar.
+# See Alda::EventList#method_missing.
+#
+# A part can have nickname.
+#
+#   Alda::Score.new do
+#     piano_ 'player1'
+#     c4 d e e e1
+#     piano_ 'player2'
+#     e4 d g g g1
+#   end
+#
+# You can use Alda::EventContainer#/ to have a set of
+# instruments.
+#
+#   Alda::Score.new do
+#     violin_/viola_
+#     c2 d4 e2_4
+#   end
+#
+# A set of instruments can also have nickname.
+# You can also access an instruments from a set.
+# See #method_missing.
+#
+#   Alda::Score.new do
+#     violin_/viola_/cello_('strings')
+#     g1_1_1
+#     strings_.cello_
+#     c1_1_1
+#   end
 class Alda::Part < Alda::Event
 	
 	##
@@ -597,7 +627,7 @@ class Alda::Part < Alda::Event
 	
 	##
 	# :call-seq:
-	#   new(names, args=nil) -> Alda::Part
+	#   new(names, arg=nil) -> Alda::Part
 	#
 	# Creates an Alda::Part.
 	def initialize names, arg = nil
@@ -613,7 +643,7 @@ class Alda::Part < Alda::Event
 	
 	##
 	# :call-seq:
-	#   part.(component)_ -> Alda::EventContainer or Alda::Part
+	#   part.(component)_() -> Alda::EventContainer or Alda::Part
 	#
 	# Enables dot accessor.
 	#
@@ -641,7 +671,13 @@ class Alda::Part < Alda::Event
 end
 
 ##
-# A voice event.
+# A voice event. An Alda::EventContainer containing an
+# Alda::Voice can be created using event list sugar.
+# See Alda::EventList#method_missing.
+#
+#   Alda::Score.new do
+#     piano_ v1 c d e f v2 e f g a
+#   end
 class Alda::Voice < Alda::Event
 	
 	##
@@ -664,8 +700,18 @@ end
 
 ##
 # A CRAM event.
-#
 # Includes Alda::EventList.
+#
+# An Alda::EventContainer containing an Alda::Cram
+# can be created using event list sugar.
+# See Alda::EventList#method_missing.
+#
+# The duration of a cram event can be specified
+# just like that of an Alda::Note.
+#
+#   Alda::Score.new do
+#     piano_ c3 t4 { c2 d4 e f }; g2
+#   end
 class Alda::Cram < Alda::Event
 	include Alda::EventList
 	
@@ -674,8 +720,9 @@ class Alda::Cram < Alda::Event
 	attr_accessor :duration
 	
 	##
-	# <tt>Alda::EventList#t</tt> invokes this method,
-	# see Alda::EventList#method_missing
+	# There is an event list sugar invoking this method,
+	# see Alda::EventList#method_missing.
+	#
 	# +block+ is to be passed with the CRAM object as +self+.
 	#
 	#   Alda::Score.new { piano_; t8 { x; y; }}
@@ -690,9 +737,15 @@ class Alda::Cram < Alda::Event
 end
 
 ##
-# A marker event.
+# A marker event. An Alda::EventContainer containing an
+# Alda::Marker can be created using event list sugar.
+# See Alda::EventList#method_missing.
 #
-# See Alda::AtMarker.
+# It should be used together with Alda::AtMarker.
+#
+#   Alda::Score.new do
+#     piano_ v1 c d _here e2 v2 __here c4 d e2
+#   end
 class Alda::Marker < Alda::Event
 	
 	##
@@ -716,9 +769,12 @@ class Alda::Marker < Alda::Event
 end
 
 ##
-# An at-marker event.
+# An at-marker event. An Alda::EventContainer containing
+# an Alda::AtMarker can be created using event list sugar.
+# See Alda::EventList#method_missing.
 #
-# See Alda::Marker.
+# It should be used together with Alda::Marer.
+# For examples, see Alda::Marker.
 class Alda::AtMarker < Alda::Event
 	
 	##
@@ -742,9 +798,23 @@ class Alda::AtMarker < Alda::Event
 end
 
 ##
-# A sequence event.
+# A sequence event. Includes Alda::EventList.
 #
-# Includes Alda::EventList.
+# An Alda::EventContainer containing
+# an Alda::Sequence can be created using event list sugar.
+# See Alda::EventList#method_missing.
+#
+#   Alda::Score.new do
+#     p s{ c; d; e; f }.event.class # => Alda::Sequence
+#   end
+#
+# There is also a special sequence sugar.
+#
+#   Alda::Score.new do
+#     p((c d e f).event.class) # => Alda::Sequence
+#   end
+#
+# The effects of the two examples above are the same.
 class Alda::Sequence < Alda::Event
 	include Alda::EventList
 	
@@ -797,9 +867,26 @@ class Alda::Sequence < Alda::Event
 end
 
 ##
-# A set-variable event.
+# A set-variable event. Includes Alda::EventList.
 #
-# Includes Alda::EventList.
+# An Alda::EventContainer containing an Alda::SetVariable
+# can be derived using event list sugar.
+# See Alda::EventList#method_missing.
+#
+# There are several equivalent means of setting variable.
+# Some of them can be ambiguous with Alda::InlineLisp or
+# Alda::GetVariable, but it is intelligently chosen.
+#
+#   Alda::Score.new do
+#     p var.event.class               # => Alda::InlineLisp
+#     p((var c d e f).event.class)    # => Alda::SetVariable
+#     p var { c d e f }.event.class   # => Alda::SetVariable
+#     p((var__ c d e f).event.class)  # => Alda::SetVariable
+#     p var__ { c d e f }.event.class # => Alda::SetVariable
+#     p((var c d e f).event.class)    # => Alda::Sequence
+#     p var.event.class               # => Alda::GetVariable
+#     p var(1).event.class            # => Alda::InlineLisp
+#   end
 class Alda::SetVariable < Alda::Event
 	include Alda::EventList
 	
@@ -824,7 +911,7 @@ class Alda::SetVariable < Alda::Event
 	end
 	
 	##
-	# Specially, the returned value ends with a newline "\n".
+	# Specially, the returned value ends with a newline "\\n".
 	def to_alda_code
 		"#@name = #{events_alda_codes}\n"
 	end
@@ -837,7 +924,12 @@ class Alda::SetVariable < Alda::Event
 end
 
 ##
-# A get-variable event
+# A get-variable event. An Alda::EventContainer containing
+# an Alda::GetVariable can be derived using event list sugar.
+# See Alda::EventList#method_missing.
+#
+# This can be ambiguous with Alda::SetVariable and
+# Alda::InlineLisp. For examples, see Alda::SetVariable.
 class Alda::GetVariable < Alda::Event
 	
 	##
@@ -859,7 +951,8 @@ class Alda::GetVariable < Alda::Event
 end
 
 ##
-# A lisp identifier event.
+# A lisp identifier event. An Alda::EventContainer containing
+# an Alda::Lisp
 #
 # It is in fact not a kind of event in alda.
 # However, such a thing is needed when writing some

@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+##
+# The module serving as a namespace.
 module Alda
 	##
 	# The version number of alda-rb.

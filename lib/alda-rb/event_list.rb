@@ -85,7 +85,7 @@ module Alda::EventList
 				sequence_sugar.(Alda::Part.new [part])
 			end
 		when /\A[a-z][a-z].*\z/                   =~ name
-			if block
+			if block || !has_variable?(name) && args.size == 1 && args.first.is_a?(Alda::Event)
 				Alda::SetVariable.new name, *args, &block
 			elsif has_variable?(name) && (args.empty? || args.size == 1 && args.first.is_a?(Alda::Event))
 				sequence_sugar.(Alda::GetVariable.new name)
