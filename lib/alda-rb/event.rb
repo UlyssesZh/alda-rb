@@ -725,7 +725,7 @@ class Alda::Cram < Alda::Event
 	#
 	# +block+ is to be passed with the CRAM object as +self+.
 	#
-	#   Alda::Score.new { piano_; t8 { x; y; }}
+	#   Alda::Score.new { piano_; t8 { a; b }}
 	def initialize duration, &block
 		@duration = duration
 		super &block
