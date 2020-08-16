@@ -15,7 +15,7 @@ class Alda::Sequence
 		/(?<letter>[a-g][-+_]*)(?<octave>\d*)/ =~ pitch
 		octave = @@last_octave ||= '4' if octave.empty?
 		result = Alda::Note.new "o#{@@last_octave = octave} #{letter}", duration
-        @events.push result.tap { _1.parent = self }
+		@events.push result.tap { _1.parent = self }
 		result
 	end
 end
