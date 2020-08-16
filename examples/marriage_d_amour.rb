@@ -69,14 +69,13 @@ Alda::Score.new do
 	end
 	motif3
 	
-	t1 { (o5 b8_16 b16 b o! c c8_16 o? b16 a g f8_16 f16 g f d4_8%1)*2 }
-	t2 { s{o2 g o! d b c g o! e o? o? f o! c a o? b o! b o? up8{s{a}}; g o! d b c g o! e o? o? f o! c a o? g o! d b}*2 }
-	
+	tt2 { s{o2 g o! d b c g o! e o? o? f o! c a o? b o! b o? up8{s{a}}; g o! d b c g o! e o? o? f o! c a o? g o! d b}*2 }
 	motif4 do
+		tt1 = -> { (o5 b8_16 b16 b o! c c8_16 o? b16 a g f8_16 f16 g f d4_8%1)*2 }
 		right_
-		t1; g4_8; up8{s{t1}}
+		tt1.(); g4_8; up8{tt1.()}
 		left_
-		t2; o4 d g b
+		tt2 o4 d g b
 	end
 	motif4
 	right_ up8{s{g2_4}}
@@ -91,11 +90,12 @@ Alda::Score.new do
 	motif2
 	motif3
 	
-	right_
-	t1; g4_8
-	up8{s{(t1 g4_8)*2; t1 g1}}
-	left_
-	t2*2; o4 d g o! d g r8_16 o! g4_8
+	tt1 = -> { (o5 b8_16 b16 b o! c c8_16 o? b16 a g f8_16 f16 g f d4_8%1)*2 }
 	
-	puts to_s
+	right_
+	tt1.(); g4_8
+	-> { up8{tt1.()}; up8{s{g4_8}} }*2
+	up8{tt1.()}; g1
+	left_
+	tt2*2; o4 d g o! d g r8_16 o! g4_8
 end.play
