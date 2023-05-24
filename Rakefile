@@ -4,8 +4,8 @@ require 'rdoc/task'
 
 RDoc::Task.new do |t|
 	t.main = 'README.md'
-	t.rdoc_files.include 'README.md', 'CODE_OF_CONDUCT.md',
-	                     'LICENSE.txt', 'lib/**/*.rb'
+	t.rdoc_dir = 'doc'
+	t.rdoc_files.include 'README.md', 'CODE_OF_CONDUCT.md', 'CHANGELOG.md', 'LICENSE.txt', 'lib/**/*.rb'
 	t.options << '--tab-width'
 	t.options << '2'
 end

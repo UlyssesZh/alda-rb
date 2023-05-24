@@ -15,6 +15,11 @@ module Alda::EventList
 	# The set containing the available variable names.
 	attr_accessor :variables
 	
+	##
+	# When the module is included by a subclass of Alda::Event,
+	# this method overrides Alda::Event#on_contained.
+	# When invoked, calls the overridden method (if any) and then evaluates the block
+	# given when ::new was called.
 	def on_contained
 		super if defined? super
 		instance_eval &@block if @block
@@ -33,6 +38,9 @@ module Alda::EventList
 	#
 	# 2. Starting with 2 lowercase letters and
 	#    ending with underline character: instrument. See Alda::Part.
+	#    This will trigger a warning if we are using \Alda 2 because
+	#    parts inside a sequence are not allowed in \Alda 2
+	#    ({alda-lang/alda#441}[https://github.com/alda-lang/alda/discussions/441#discussioncomment-3825064]).
 	#
 	# 3. Starting with 2 lowercase letters: inline lisp code,
 	#    set variable, or get variable.
@@ -82,14 +90,13 @@ module Alda::EventList
 			if args.first.is_a? String
 				Alda::Part.new [part], args.first
 			else
+				Alda::Utils.warn 'parts in sequence not allowed in v2' if Alda.v2? && !args.empty?
 				sequence_sugar.(Alda::Part.new [part])
 			end
 		when /\A[a-z][a-z].*\z/                   =~ name
 			arg = args.first
 			if block || !has_variable?(name) && args.size == 1 && arg.is_a?(Alda::Event) &&
-					!arg.is_a?(Alda::InlineLisp) && !arg.is_a?(Alda::LispIdentifier) &&
-					!(arg.is_a?(Alda::EventContainer) &&
-							(arg.event.is_a?(Alda::InlineLisp) || arg.event.is_a?(Alda::LispIdentifier)))
+					!arg.is_event_of?(Alda::InlineLisp) && !arg.is_event_of?(LispIdentifier)
 				Alda::SetVariable.new name, *args, &block
 			elsif has_variable?(name) && (args.empty? || args.size == 1 && arg.is_a?(Alda::Event))
 				sequence_sugar.(Alda::GetVariable.new name)
@@ -156,7 +163,7 @@ module Alda::EventList
 	# :call-seq:
 	#   new(&block) -> Alda::EventList
 	#
-	# +block+ is to be passed with the Alda::EventList object as +self+.
+	# The parameter +block+ is to be passed with the Alda::EventList object as +self+.
 	#
 	# Note that +block+ is not called immediately.
 	# It is instead called in #on_contained.
@@ -197,6 +204,16 @@ module Alda::EventList
 	# Returns a string representing the result.
 	def events_alda_codes delimiter = ' '
 		@events.map(&:to_alda_code).join delimiter
+	end
+	
+	##
+	# :call-seq:
+	#   event_list == other -> true or false
+	#
+	# Returns true if +other+ is of the same class as +event_list+
+	# and they have the same (in the sense of <tt>==</tt>) #events and #variables.
+	def == other
+		super || self.class == other.class && @events == other.events && @variables == other.variables
 	end
 end
 

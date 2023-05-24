@@ -1,0 +1,52 @@
+PATH
+  remote: .
+  specs:
+    alda-rb (0.3.0)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    ast (2.4.2)
+    colorize (0.8.1)
+    json (2.6.3)
+    minitest (5.18.0)
+    parallel (1.23.0)
+    parser (3.2.2.1)
+      ast (~> 2.4.1)
+    psych (5.1.0)
+      stringio
+    rainbow (3.1.1)
+    rake (12.3.3)
+    rdoc (6.5.0)
+      psych (>= 4.0.0)
+    regexp_parser (2.8.0)
+    rexml (3.2.5)
+    rubocop (1.51.0)
+      json (~> 2.3)
+      parallel (~> 1.10)
+      parser (>= 3.2.0.0)
+      rainbow (>= 2.2.2, < 4.0)
+      regexp_parser (>= 1.8, < 3.0)
+      rexml (>= 3.2.5, < 4.0)
+      rubocop-ast (>= 1.28.0, < 2.0)
+      ruby-progressbar (~> 1.7)
+      unicode-display_width (>= 2.4.0, < 3.0)
+    rubocop-ast (1.28.1)
+      parser (>= 3.2.1.0)
+    ruby-progressbar (1.13.0)
+    stringio (3.0.6)
+    unicode-display_width (2.4.2)
+
+PLATFORMS
+  x86_64-linux
+
+DEPENDENCIES
+  alda-rb!
+  colorize
+  minitest (~> 5.0)
+  rake (~> 12.0)
+  rdoc
+  rubocop
+
+BUNDLED WITH
+   2.4.1

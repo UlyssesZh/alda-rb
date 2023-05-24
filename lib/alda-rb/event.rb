@@ -65,6 +65,29 @@ class Alda::Event
 			raise Alda::OrderError.new self, got
 		end
 	end
+	
+	##
+	# :call-seq:
+	#   is_event_of?(klass) -> true or false
+	#
+	# Whether it is an event of the given class (+klass+).
+	# By default, this is the same as +is_a?(klass)+.
+	# It is overridden in Alda::EventContainer.
+	def is_event_of? klass
+		is_a? klass
+	end
+	
+	##
+	# :call-seq:
+	#   event == other -> true or false
+	#
+	# Whether it is equal to +other+.
+	# To be overriden.
+	#
+	# Note that #parent and #container should not be taken into account when comparing two events.
+	def == other
+		super
+	end
 end
 
 ##
@@ -83,6 +106,8 @@ class Alda::EventContainer < Alda::Event
 	#     p((e/g).event.class) # => Alda::Chord
 	#     p((a b).event.class) # => Alda::Sequence
 	#  end
+	#
+	# When setting this attribute, #on_containing is invoked.
 	attr_accessor :event
 	
 	##
@@ -114,9 +139,11 @@ class Alda::EventContainer < Alda::Event
 	#
 	# +parent+ is the Alda::EventList object containing the event.
 	def initialize event, parent
+		super()
 		@event = event
-		@parent = parent
 		@labels = []
+		@count = 1
+		self.parent = parent
 		on_containing
 	end
 	
@@ -124,13 +151,31 @@ class Alda::EventContainer < Alda::Event
 	# :call-seq:
 	#   container / other -> container
 	#
-	# Makes #event an Alda::Chord object.
+	# If at first #event is not an Alda::Part,
+	# makes #event an Alda::Chord object.
 	#
 	#   Alda::Score.new { piano_; c/-e/g }.play
 	#   # (plays the chord Cm)
 	#
-	# If the contained event is an Alda::Part object,
+	# This usage assumes that +other+ is an Alda::EventContainer and will extract the contained event
+	# out from +other+.
+	# This will lose some information about +other+, such as #count and #labels,
+	# and potentially lead to confusing results.
+	#
+	# Because the #labels information about +other+ is lost,
+	# the label on +d+ disappears in the following example:
+	#
+	#   Alda::Score.new { c/(d%1) }.to_s # => "c/d"
+	#
+	# The following example shows that the two ways of writing a chord with a label are equivalent:
+	# adding the label and then using slash, or using slash and then adding the label.
+	# This is because #labels and #count are retained while the #event is updated when #/ is called.
+	#
+	#   Alda::Score.new { p c%1/d == c/d%1 }.to_s # (prints "true") => "c/d'1 c/d'1"
+	#
+	# If at first #event is an Alda::Part object,
 	# makes #event a new Alda::Part object.
+	# The meaning is to play the two parts simultaneously.
 	#
 	#   Alda::Score.new { violin_/viola_/cello_; e; f; g}.play
 	#   # (plays notes E, F, G with three instruments simultaneously)
@@ -145,12 +190,12 @@ class Alda::EventContainer < Alda::Event
 		self
 	end
 	
+	##
+	# Overrides Alda::Event#to_alda_code.
 	def to_alda_code
 		result = @event.to_alda_code
-		unless @labels.empty?
-			result.concat ?', @labels.map(&:to_alda_code).join(?,)
-		end
-		result.concat ?*, @count.to_alda_code if @count
+		result.concat ?', @labels.map(&:to_alda_code).join(?,) unless @labels&.empty?
+		result.concat ?*, @count.to_alda_code if @count && @count != 1
 		result
 	end
 	
@@ -163,6 +208,7 @@ class Alda::EventContainer < Alda::Event
 	# For examples, see #%.
 	def * num
 		@count = (@count || 1) * num
+		check_in_chord
 		self
 	end
 	
@@ -177,28 +223,86 @@ class Alda::EventContainer < Alda::Event
 	def % labels
 		labels = [labels] unless labels.is_a? Array
 		@labels.replace labels.to_a
+		check_in_chord
 		self
+	end
+	
+	def event= event # :nodoc:
+		@event = event.tap { on_containing }
 	end
 	
 	##
 	# :call-seq:
-	#   event=(event) -> event
+	#   check_in_chord() -> true or false
 	#
-	# Sets #event and invokes #on_containing.
-	def event= event
-		@event = event
-		on_containing
-		@event
+	# This method is called in #%, #*, and #parent=.
+	# It checks if #parent is an Alda::Chord and warns about potential dangers.
+	# Returns true if there is no danger, and false otherwise.
+	#
+	# Because \Alda 2 does not support specifying alternative endings inside a chord
+	# (something like <tt>a'1/b</tt>)
+	# ({alda-lang/alda#383}[https://github.com/alda-lang/alda/issues/383#issuecomment-886084486]),
+	# this method will warn about this if such thing happens and we are using \Alda 2.
+	#
+	#   Alda.generation = :v2
+	#   Alda::Score.new { x{a%1;b} }.to_s # (warns) => "a'1/b"
+	#
+	# This method will warn about repetitions inside a chord in both generations
+	# because the resultant \Alda code is not valid.
+	#
+	#   Alda::Score.new { x{a*2;b} }.to_s # (warns) => "a*2/b"
+	def check_in_chord
+		if @parent.is_a?(Alda::Event) && @parent.is_event_of?(Alda::Chord)
+			Alda::Utils.warn 'alternative endings in chord not allowed in v2' if Alda.v2? && !@labels&.empty?
+			Alda::Utils.warn 'repetitions in chord not allowed' if @count && @count != 1
+			false
+		else
+			true
+		end
+	end
+	
+	##
+	# :call-seq:
+	#  parent=(event) -> event
+	#
+	# Overrides Alda::Event#parent=.
+	# Sets the Alda::Event#parent of the container as well as that of #event.
+	def parent= event
+		@parent = event
+		check_in_chord
+		@event.parent = event
 	end
 	
 	##
 	# A callback invoked in #event= and ::new.
 	def on_containing
-		if @event
-			@event.container = self
-			@event.parent = @parent
-			@event.on_contained
-		end
+		return unless @event
+		@event.container = self
+		@event.parent = @parent
+		@event.on_contained
+	end
+	
+	##
+	# :call-seq:
+	#   is_event_of?(klass) -> true or false
+	#
+	# Overrides Alda::Event#is_event_of?.
+	# Whether it is an event of the given class (+klass+)
+	# or the contained event is.
+	def is_event_of? klass
+		super || @event.is_event_of?(klass)
+	end
+	
+	##
+	# :call-seq:
+	#   container == other -> true or false
+	#
+	# Overrides Alda::Event#==.
+	# Returns true if +other+ is an Alda::EventContainer object
+	# and #event, #count and #labels are all equal (using <tt>==</tt>).
+	def == other
+		super || other.is_a?(Alda::EventContainer) &&
+				@event == other.event && @count == other.count && @labels == other.labels
 	end
 	
 	##
@@ -221,8 +325,7 @@ class Alda::EventContainer < Alda::Event
 	#   end
 	def method_missing(...)
 		result = @event.__send__(...)
-		result = self if result == @event
-		result
+		result == @event ? self : result
 	end
 end
 
@@ -288,10 +391,11 @@ end
 #
 # If you want, you can generate lisp codes using ruby.
 #
+#   Alda.generation = :v1
 #   Alda::Score.new do
 #     println reduce _into_, {}, [{dog: 'food'}, {cat: 'chow'}]
 #   end.save 'temp.clj'
-#   `clj temp.clj` # => "[[:dog food] [:cat chow]]\n"
+#   `clojure temp.clj` # => "{:dog food, :cat chow}\n"
 class Alda::InlineLisp < Alda::Event
 	
 	##
@@ -313,17 +417,33 @@ class Alda::InlineLisp < Alda::Event
 	#
 	# The underlines "_" in +head+ will be converted to hyphens "-".
 	def initialize head, *args
+		super()
 		@head = head.to_s.gsub ?_, ?-
 		@args = args
 	end
 	
+	##
+	# Overrides Alda::Event#to_alda_code.
 	def to_alda_code
 		"(#{head} #{args.map(&:to_alda_code).join ' '})"
 	end
 	
+	##
+	# See Alda::Event#on_contained.
 	def on_contained
 		super
 		@args.detach_from_parent
+	end
+	
+	##
+	# :call-seq:
+	#   inline_lisp == other -> true or false
+	#
+	# Overrides Alda::Event#==.
+	# Returns true if +other+ is an Alda::InlineLisp
+	# and has the same #head and #args as +inline_lisp+ (using <tt>==</tt>).
+	def == other
+		super || other.is_a?(Alda::InlineLisp) && @head == other.head && @args == other.args
 	end
 end
 
@@ -373,6 +493,7 @@ class Alda::Note < Alda::Event
 	# slur if 2,
 	# both natural and slur if 3.
 	def initialize pitch, duration
+		super()
 		@pitch = pitch.to_s
 		@duration = duration.to_s.tr ?_, ?~
 		case @duration[-1]
@@ -431,10 +552,23 @@ class Alda::Note < Alda::Event
 		self
 	end
 	
+	##
+	# Overrides Alda::Event#to_alda_code.
 	def to_alda_code
 		result = @pitch + @duration
 		result.concat ?*, @count.to_alda_code if @count
 		result
+	end
+	
+	##
+	# :call-seq:
+	#   note == other -> true or false
+	#
+	# Overrides Alda::Event#==.
+	# Returns true if +other+ is an Alda::Note
+	# and has the same #pitch and #duration as +note+ (using <tt>==</tt>).
+	def == other
+		super || other.is_a?(Alda::Note) && @pitch == other.pitch && @duration == other.duration
 	end
 end
 
@@ -463,11 +597,25 @@ class Alda::Rest < Alda::Event
 	#
 	# Underlines "_" in +duration+ will be converted to tildes "~".
 	def initialize duration
+		super()
 		@duration = duration.to_s.tr ?_, ?~
 	end
 	
+	##
+	# Overrides Alda::Event#to_alda_code.
 	def to_alda_code
 		?r + @duration
+	end
+	
+	##
+	# :call-seq:
+	#   rest == other -> true or false
+	#
+	# Overrides Alda::Event#==.
+	# Returns true if +other+ is an Alda::Rest
+	# and has the same #duration as +rest+ (using <tt>==</tt>).
+	def == other
+		super || other.is_a?(Alda::Rest) && @duration == other.duration
 	end
 end
 
@@ -501,6 +649,7 @@ class Alda::Octave < Alda::Event
 	#
 	# Creates an Alda::Octave.
 	def initialize num
+		super()
 		@num = num.to_s
 		@up_or_down = 0
 	end
@@ -531,6 +680,8 @@ class Alda::Octave < Alda::Event
 		self
 	end
 	
+	##
+	# Overrides Alda::Event#to_alda_code.
 	def to_alda_code
 		case @up_or_down <=> 0
 		when 0
@@ -540,6 +691,17 @@ class Alda::Octave < Alda::Event
 		when -1
 			?< * -@up_or_down
 		end
+	end
+	
+	##
+	# :call-seq:
+	#   octave == other -> true or false
+	#
+	# Overrides Alda::Event#==.
+	# Returns true if +other+ is an Alda::Octave
+	# and has the same #num and #up_or_down as +octave+ (using <tt>==</tt>).
+	def == other
+		super || other.is_a?(Alda::Octave) && @num == other.num && @up_or_down == other.up_or_down
 	end
 end
 
@@ -574,12 +736,36 @@ class Alda::Chord < Alda::Event
 	#   Alda::Score.new { piano_; x { c; -e; g } }.play
 	#   # (plays chord Cm)
 	def initialize *events, &block
+		events.each { _1.parent = self }
 		@events = events
 		super &block
 	end
 	
+	##
+	# Overrides Alda::Event#to_alda_code.
+	#
+	# Behaves differently for \Alda 1 and \Alda 2:
+	# because \Alda 2 does not allow octave changes as part of a chord
+	# (something like <tt>a/>/c</tt>, and we have to write <tt>a>/c</tt> or <tt>a/>c</tt> instead)
+	# ({alda-lang/alda#383}[https://github.com/alda-lang/alda/issues/383]),
+	# the code generated by this method will omit the slash before an octave change.
+	#
+	#   Alda.generation = :v1
+	#   Alda::Score.new { a/o!/c; a/o5/c }.to_s # => "a/>/c a/o5/c"
+	#   Alda.generation = :v2
+	#   Alda::Score.new { a/o!/c; a/o5/c }.to_s # => "a>/c a o5/c"
 	def to_alda_code
-		events_alda_codes ?/
+		return events_alda_codes ?/ if Alda.v1?
+		@events.each_with_index.with_object '' do |(event, i), result|
+			if i == 0
+				# concat nothing
+			elsif event.is_event_of? Alda::Octave
+				result.concat ' ' unless event.num.empty?
+			else
+				result.concat '/'
+			end
+			result.concat event.to_alda_code
+		end
 	end
 end
 
@@ -631,10 +817,13 @@ class Alda::Part < Alda::Event
 	#
 	# Creates an Alda::Part.
 	def initialize names, arg = nil
+		super()
 		@names = names.map { |name| name.to_s.tr ?_, ?- }
 		@arg = arg
 	end
 	
+	##
+	# Overrides Alda::Event#to_alda_code.
 	def to_alda_code
 		result = @names.join ?/
 		result.concat " \"#{@arg}\"" if @arg
@@ -668,6 +857,17 @@ class Alda::Part < Alda::Event
 			@container || self
 		end
 	end
+	
+	##
+	# :call-seq:
+	#   part == other -> true or false
+	#
+	# Overrides Alda::Event#==.
+	# Returns true if +other+ is an Alda::Part
+	# and has the same #names and #arg as +part+ (using <tt>==</tt>).
+	def == other
+		super || other.is_a?(Alda::Part) && @names == other.names && @arg == other.arg
+	end
 end
 
 ##
@@ -690,11 +890,25 @@ class Alda::Voice < Alda::Event
 	#
 	# Creates an Alda::Voice.
 	def initialize num
+		super()
 		@num = num
 	end
 	
+	##
+	# Overrides Alda::Event#to_alda_code.
 	def to_alda_code
 		?V + num + ?:
+	end
+	
+	##
+	# :call-seq:
+	#   voice == other -> true or false
+	#
+	# Overrides Alda::Event#==.
+	# Returns true if +other+ is an Alda::Voice
+	# and has the same #num as +voice+ (using <tt>==</tt>).
+	def == other
+		super || other.is_a?(Alda::Voice) && @num == other.num
 	end
 end
 
@@ -731,8 +945,21 @@ class Alda::Cram < Alda::Event
 		super &block
 	end
 	
+	##
+	# Overrides Alda::Event#to_alda_code.
 	def to_alda_code
 		"{#{events_alda_codes}}#@duration"
+	end
+	
+	##
+	# :call-seq:
+	#   cram == other -> true or false
+	#
+	# Overrides Alda::EventList#==.
+	# Returns true if the super method returns true and +other+
+	# has the same #duration as +cram+ (using <tt>==</tt>).
+	def == other
+		super && @duration == other.duration
 	end
 end
 
@@ -760,11 +987,25 @@ class Alda::Marker < Alda::Event
 	#
 	# Underlines in +name+ is converted to hyphens.
 	def initialize name
+		super()
 		@name = name.to_s.tr ?_, ?-
 	end
 	
+	##
+	# Overrides Alda::Event#to_alda_code.
 	def to_alda_code
 		?% + @name
+	end
+	
+	##
+	# :call-seq:
+	#   marker == other -> true or false
+	#
+	# Overrides Alda::Event#==.
+	# Returns true if +other+ is an Alda::Marker
+	# and has the same #name as +marker+ (using <tt>==</tt>).
+	def == other
+		super || other.is_a?(Alda::Marker) && @name == other.name
 	end
 end
 
@@ -789,11 +1030,25 @@ class Alda::AtMarker < Alda::Event
 	#
 	# Underlines "_" in +name+ is converted to hyphens "-".
 	def initialize name
+		super()
 		@name = name.to_s.tr ?_, ?-
 	end
 	
+	##
+	# Overrides Alda::Event#to_alda_code.
 	def to_alda_code
 		?@ + @name
+	end
+	
+	##
+	# :call-seq:
+	#   at_marker == other -> true or false
+	#
+	# Overrides Alda::Event#==.
+	# Returns true if +other+ is an Alda::AtMarker
+	# and has the same #name as +at_marker+ (using <tt>==</tt>).
+	def == other
+		super || other.is_a?(Alda::AtMarker) && @name == other.name
 	end
 end
 
@@ -814,7 +1069,8 @@ end
 #     p((c d e f).event.class) # => Alda::Sequence
 #   end
 #
-# The effects of the two examples above are the same.
+# The effects of the two examples above are technically the same
+# although actually the generated list of events are slightly different.
 class Alda::Sequence < Alda::Event
 	include Alda::EventList
 	
@@ -829,6 +1085,8 @@ class Alda::Sequence < Alda::Event
 	#   [a].flatten # => [#<Object:...>]
 	module RefineFlatten
 		refine Array do
+			##
+			# Overrides Array#flatten.
 			def flatten
 				each_with_object [] do |element, result|
 					if element.is_a? Array
@@ -842,8 +1100,10 @@ class Alda::Sequence < Alda::Event
 	end
 	using RefineFlatten
 	
+	##
+	# Overrides Alda::Event#to_alda_code.
 	def to_alda_code
-		@events.to_alda_code
+		"[#{events_alda_codes}]"
 	end
 	
 	##
@@ -907,19 +1167,34 @@ class Alda::SetVariable < Alda::Event
 		@name = name.to_sym
 		@original_events = events
 		@events = events.clone
+		@events.each { _1.parent = self }
 		super &block
 	end
 	
 	##
 	# Specially, the returned value ends with a newline "\\n".
+	# Overrides Alda::Event#to_alda_code.
 	def to_alda_code
 		"#@name = #{events_alda_codes}\n"
 	end
 	
+	##
+	# See Alda::Event#on_contained.
 	def on_contained
 		super
 		@parent.variables.add @name
 		@original_events.detach_from_parent
+	end
+	
+	##
+	# :call-seq:
+	#   set_variable == other -> true or false
+	#
+	# Overrides Alda::EventList#==.
+	# Returns true if the super method returns true and +other+
+	# has the same #name as +set_variable+ (using <tt>==</tt>).
+	def == other
+		super && @name == other.name
 	end
 end
 
@@ -942,11 +1217,25 @@ class Alda::GetVariable < Alda::Event
 	#
 	# Creates an Alda::GetVariable.
 	def initialize name
+		super()
 		@name = name
 	end
 	
+	##
+	# Overrides Alda::Event#to_alda_code.
 	def to_alda_code
 		@name.to_s
+	end
+	
+	##
+	# :call-seq:
+	#   get_variable == other -> true or false
+	#
+	# Overrides Alda::Event#==.
+	# Returns true if +other+ is an Alda::GetVariable
+	# and has the same #name as +get_variable+ (using <tt>==</tt>).
+	def == other
+		super || other.is_a?(Alda::GetVariable) && @name == other.name
 	end
 end
 
@@ -974,10 +1263,24 @@ class Alda::LispIdentifier < Alda::Event
 	#
 	# Underlines "_" in +name+ is converted to hyphens "-".
 	def initialize name
+		super()
 		@name = name.tr ?_, ?-
 	end
 	
+	##
+	# Overrides Alda::Event#to_alda_code.
 	def to_alda_code
 		@name
+	end
+	
+	##
+	# :call-seq:
+	#   lisp_identifier == other -> true or false
+	#
+	# Overrides Alda::Event#==.
+	# Returns true if +other+ is an Alda::LispIdentifier
+	# and has the same #name as +lisp_identifier+ (using <tt>==</tt>).
+	def == other
+		super || other.is_a?(Alda::LispIdentifier) && @name == other.name
 	end
 end

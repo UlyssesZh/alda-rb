@@ -1,12 +1,36 @@
 require 'stringio'
 
 ##
+# Contains patches to Ruby's core classes.
+class Thread
+	##
+	# Because \Alda 2 uses quoted lists to denote lists (vectors) of symbols,
+	# we have to keep track of whether we are inside a list already
+	# (because this notation is inconsistent for inner lists and outer lists).
+	attr_accessor :inside_alda_list
+end
+
+##
+# Contains patches to Ruby's core classes.
 class Array
 	
 	##
 	# See Alda::Event#to_alda_code.
+	# Behaves differently for \Alda 1 and \Alda 2 (due to
+	# {a breaking change}[https://github.com/alda-lang/alda/blob/master/doc/alda-2-migration-guide.md#attribute-syntax-has-changed-in-some-cases]).
 	def to_alda_code
-		"[#{map(&:to_alda_code).join ' '}]"
+		contents = -> { map(&:to_alda_code).join ' ' }
+		if Alda.v1?
+			"[#{contents.()}]"
+		else
+			thread = Thread.current
+			if thread.inside_alda_list
+				"(#{contents.()})"
+			else
+				thread.inside_alda_list = true
+				"'(#{contents.()})".tap { thread.inside_alda_list = false }
+			end
+		end
 	end
 	
 	##
@@ -17,12 +41,26 @@ class Array
 end
 
 ##
+# Contains patches to Ruby's core classes.
 class Hash
 	
 	##
 	# See Alda::Event#to_alda_code.
+	# Behaves differently for \Alda 1 and \Alda 2 (due to
+	# {a breaking change}[https://github.com/alda-lang/alda/blob/master/doc/alda-2-migration-guide.md#attribute-syntax-has-changed-in-some-cases]).
 	def to_alda_code
-		"[#{map(&:to_alda_code).join ' '}]"
+		contents = -> { map { "#{_1.to_alda_code} #{_2.to_alda_code}" }.join ' ' }
+		if Alda.v1?
+			"{#{contents.()}}"
+		else
+			thread = Thread.current
+			if thread.inside_alda_list
+				"(#{contents.()})"
+			else
+				thread.inside_alda_list = true
+				"'(#{contents.()})".tap { thread.inside_alda_list = false }
+			end
+		end
 	end
 	
 	##
@@ -33,6 +71,7 @@ class Hash
 end
 
 ##
+# Contains patches to Ruby's core classes.
 class String
 	
 	##
@@ -48,12 +87,13 @@ class String
 end
 
 ##
+# Contains patches to Ruby's core classes.
 class Symbol
 	
 	##
 	# See Alda::Event#to_alda_code.
 	def to_alda_code
-		?: + to_s
+		"#{Alda.v1? ? ?: : Thread.current.inside_alda_list ? '' : ?'}#{to_s}"
 	end
 	
 	##
@@ -63,6 +103,7 @@ class Symbol
 end
 
 ##
+# Contains patches to Ruby's core classes.
 class Numeric
 	
 	##
@@ -78,6 +119,7 @@ class Numeric
 end
 
 ##
+# Contains patches to Ruby's core classes.
 class Range
 	
 	##
@@ -93,6 +135,7 @@ class Range
 end
 
 ##
+# Contains patches to Ruby's core classes.
 class TrueClass
 	
 	##
@@ -108,6 +151,7 @@ class TrueClass
 end
 
 ##
+# Contains patches to Ruby's core classes.
 class FalseClass
 	
 	##
@@ -123,6 +167,7 @@ class FalseClass
 end
 
 ##
+# Contains patches to Ruby's core classes.
 class NilClass
 	
 	##
@@ -138,6 +183,7 @@ class NilClass
 end
 
 ##
+# Contains patches to Ruby's core classes.
 class Proc
 	
 	##
@@ -155,6 +201,7 @@ class Proc
 end
 
 ##
+# Contains patches to Ruby's core classes.
 class StringIO
 	
 	##

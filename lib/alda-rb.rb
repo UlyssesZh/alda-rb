@@ -2,6 +2,7 @@
 
 require 'alda-rb/version'
 require 'alda-rb/patches'
+require 'alda-rb/utils'
 require 'alda-rb/error'
 require 'alda-rb/commandline'
 require 'alda-rb/event_list'

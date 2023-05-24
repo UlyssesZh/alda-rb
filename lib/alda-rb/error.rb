@@ -37,6 +37,35 @@ class Alda::CommandLineError < StandardError
 end
 
 ##
+# This error is raised when one tries to run commands that are not available for the generation
+# of \Alda specified by Alda::generation.
+#
+#   Alda.generation = :v1
+#   Alda.import # (GenerationError)
+class Alda::GenerationError < StandardError
+	
+	##
+	# The actual generation that was set by Alda::generation when the error occurs.
+	attr_reader :generation
+	
+	##
+	# The generations that could have been set to avoid the error.
+	# An Array.
+	attr_reader :fine_generations
+	
+	##
+	# :call-seq:
+	#   new(fine_generations) -> Alda::GenerationError
+	#
+	# Creates a Alda::GenerationError object.
+	def initialize fine_generations
+		super "bad Alda generation for this action; good ones are #{fine_generations}"
+		@generation = Alda.generation
+		@fine_generations = fine_generations
+	end
+end
+
+##
 # This error is raised when one tries to
 # append events in an Alda::EventList in a wrong order.
 #
@@ -72,6 +101,8 @@ class Alda::OrderError < StandardError
 	##
 	# :call-seq:
 	#   new(expected, got) -> Alda::OrderError
+	#
+	# Creates a Alda::OrderError object.
 	def initialize expected, got
 		super 'events are out of order'
 		@expected = expected

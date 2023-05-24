@@ -8,7 +8,7 @@ require 'stringio'
 # :call-seq:
 #   repl() -> nil
 #
-# Start a REPL session.
+# Start an \REPL session.
 def Alda.repl
 	Alda::REPL.new.run
 end
@@ -72,6 +72,8 @@ class Alda::REPL
 	# in an instance of this class,
 	# so you can call the instance methods down here
 	# when you play with an \REPL.
+	#--
+	# TODO documents
 	class TempScore < Alda::Score
 		include Alda
 		
