@@ -9,7 +9,7 @@ Added API for support \Alda 2 while still being able to support \Alda 1:
 - Added Alda::COMMANDS_FOR_VERSIONS and Alda::GENERATIONS.
 - Added Alda::generation, which can be `:v1` or `:v2`.
 Specifically, one of the values in the array Alda::GENERATIONS.
-- Added Alda::v1? and Alda::v2? (See Alda::GENERATIONS).
+- Added Alda::v1?, Alda::v2?, Alda::v1!, Alda::v2! (See Alda::GENERATIONS).
 - Added Alda::deduce_generation.
 - Added Alda::GenerationError.
 - In Alda::Chord#to_alda_code, considering an undocumented breaking change about chords,
@@ -45,6 +45,10 @@ New features:
 
 - Added warnings about structures that probably trigger errors in \Alda.
 See Alda::EventContainer#check_in_chord, Alda::EventList#method_missing.
+- Now you can specify a parameter in Alda::Event#detach_from_parent to exclude some
+classes of parents that will be detached from.
+- (Potentially BREAKING) Alda::Event#detach_from_parent now tries to detach the topmost container
+instead of the event itself from the parent.
 
 New APIs:
 
@@ -63,6 +67,7 @@ Slightly improved docs:
 - Kernel.
 - Alda::EventList::new.
 - Alda::OrderError::new.
+- Alda::InlineLisp.
 
 Much better docs:
 
@@ -73,6 +78,10 @@ Much better docs:
 New examples:
 
 - dynamics.
+
+### BREAKING deletions
+
+- Removed Alda::SetVariable#original_events.
 
 ### Fixed bugs
 

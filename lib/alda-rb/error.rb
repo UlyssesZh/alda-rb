@@ -40,7 +40,7 @@ end
 # This error is raised when one tries to run commands that are not available for the generation
 # of \Alda specified by Alda::generation.
 #
-#   Alda.generation = :v1
+#   Alda.v1!
 #   Alda.import # (GenerationError)
 class Alda::GenerationError < StandardError
 	

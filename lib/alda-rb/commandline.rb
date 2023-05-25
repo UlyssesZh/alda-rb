@@ -20,110 +20,19 @@ end
 
 module Alda
 	
-	class << self
-		
-		##
-		# The path to the +alda+ executable.
-		#
-		# The default value is <tt>"alda"</tt>,
-		# which will depend on your +PATH+.
-		attr_accessor :executable
-		
-		##
-		# The commandline options set using ::[].
-		# Not the subcommand options.
-		# Clear it using ::clear_options.
-		attr_reader :options
-		
-		##
-		# The major version of the +alda+ command used.
-		# Possible values: +:v1+ or +:v2+ (i.e. one of the values in Alda::GENERATIONS).
-		# If you try to specify it to values other than those, an ArgumentError will be raised.
-		# This affects several things due to some incompatible changes from \Alda 1 to \Alda 2.
-		# You may use ::deduce_generation to automatically set it.
-		attr_accessor :generation
-		def generation= gen # :nodoc:
-			raise ArgumentError, "bad generation: #{gen}" unless GENERATIONS.include? gen
-			@generation = gen
-		end
-		
-		##
-		# :call-seq:
-		#   Alda[**opts] -> self
-		#
-		# Sets the options of alda command.
-		# Not the subcommand options.
-		#
-		#   # This example only works for Alda 1.
-		#   Alda[port: 1108].up # => "[1108] ..."
-		#   Alda.status # => "[1108] ..."
-		#
-		# Further set options will be merged.
-		# The options can be seen by ::options.
-		# To clear them, use ::clear_options.
-		def [] **opts
-			@options.merge! opts
-			self
-		end
-		
-		##
-		# :call-seq:
-		#   clear_options() -> nil
-		#
-		# Clears the command line options.
-		# Makes ::options an empty Array.
-		def clear_options
-			@options.clear
-		end
-	end
-	
-	@executable = 'alda'
-	@options = {}
-	@generation = :v2
-	
-	##
-	# :call-seq:
-	#   up?() -> true or false
-	#
-	# Whether the alda server is up.
-	# Always returns true if ::generation is +:v2+.
-	def up?
-		generation == :v2 || status.include?('up')
-	end
-	
-	##
-	# :call-seq:
-	#   down? -> true or false
-	#
-	# Whether the alda server is down.
-	# Always returns false if ::generation is +:v2+.
-	def down?
-		generation != :v2 && status.include?('down')
-	end
-	
-	##
-	# :call-seq:
-	#   deduce_generation -> one of Alda::GENERATIONS
-	#
-	# Deduce the generation of \Alda being used by running <tt>alda version</tt> in command line,
-	# and then set ::generation accordingly.
-	def deduce_generation
-		/(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)/ =~ version
-		@generation = major == '1' ? :v1 : :v2
-	end
-	
-	module_function :up?, :down?, :deduce_generation
-	
 	##
 	# The Array of possible values of ::generation.
 	# It is just the array <tt>[:v1, :v2]</tt>
 	#
 	# You can use +:v1?+ and +:v2?+ to get whether the current generation is +:v1+ or +:v2+.
-	# For example, <tt>Alda.v1?</tt> is the same as <tt>Alda.generation == :v1</tt>
+	# For example, <tt>Alda.v1?</tt> is the same as <tt>Alda.generation == :v1</tt>.
+	# You can also use +:v1!+ and +:v2!+ to set the generation to +:v1+ or +:v2+.
+	# For example, <tt>Alda.v1!</tt> is the same as <tt>Alda.generation = :v1</tt>.
 	GENERATIONS = %i[v1 v2].freeze
 	
 	GENERATIONS.each do |gen|
-		module_function define_method("#{gen}?") { generation == gen }
+		module_function define_method("#{gen}?") { @generation == gen }
+		module_function define_method("#{gen}!") { @generation = gen }
 	end
 	
 	##
@@ -199,5 +108,100 @@ module Alda
 			IO.popen(args, &:read).tap { raise CommandLineError.new $?, _1 if $?.exitstatus.nonzero? }
 		end.tap { module_function _1 }
 	end
+	
+	class << self
+		
+		##
+		# The path to the +alda+ executable.
+		#
+		# The default value is <tt>"alda"</tt>,
+		# which will depend on your +PATH+.
+		attr_accessor :executable
+		
+		##
+		# The commandline options set using ::[].
+		# Not the subcommand options.
+		# Clear it using ::clear_options.
+		attr_reader :options
+		
+		##
+		# The major version of the +alda+ command used.
+		# Possible values: +:v1+ or +:v2+ (i.e. one of the values in Alda::GENERATIONS).
+		# If you try to specify it to values other than those, an ArgumentError will be raised.
+		# This affects several things due to some incompatible changes from \Alda 1 to \Alda 2.
+		# You may use ::deduce_generation to automatically set it,
+		# or use #v1! or #v2! to set it in a shorter way.
+		attr_accessor :generation
+		def generation= gen # :nodoc:
+			raise ArgumentError, "bad generation: #{gen}" unless GENERATIONS.include? gen
+			@generation = gen
+		end
+		
+		##
+		# :call-seq:
+		#   Alda[**opts] -> self
+		#
+		# Sets the options of alda command.
+		# Not the subcommand options.
+		#
+		#   # This example only works for Alda 1.
+		#   Alda[port: 1108].up # => "[1108] ..."
+		#   Alda.status # => "[1108] ..."
+		#
+		# Further set options will be merged.
+		# The options can be seen by ::options.
+		# To clear them, use ::clear_options.
+		def [] **opts
+			@options.merge! opts
+			self
+		end
+		
+		##
+		# :call-seq:
+		#   clear_options() -> nil
+		#
+		# Clears the command line options.
+		# Makes ::options an empty Array.
+		def clear_options
+			@options.clear
+		end
+	end
+	
+	@executable = 'alda'
+	@options = {}
+	v2!
+	
+	##
+	# :call-seq:
+	#   up?() -> true or false
+	#
+	# Whether the alda server is up.
+	# Always returns true if ::generation is +:v2+.
+	def up?
+		v2? || status.include?('up')
+	end
+	
+	##
+	# :call-seq:
+	#   down? -> true or false
+	#
+	# Whether the alda server is down.
+	# Always returns false if ::generation is +:v2+.
+	def down?
+		!v2? && status.include?('down')
+	end
+	
+	##
+	# :call-seq:
+	#   deduce_generation -> one of Alda::GENERATIONS
+	#
+	# Deduce the generation of \Alda being used by running <tt>alda version</tt> in command line,
+	# and then set ::generation accordingly.
+	def deduce_generation
+		/(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)/ =~ version
+		@generation = major == '1' ? :v1 : :v2
+	end
+	
+	module_function :up?, :down?, :deduce_generation
 	
 end

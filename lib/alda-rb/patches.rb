@@ -35,8 +35,8 @@ class Array
 	
 	##
 	# See Alda::Event#detach_from_parent.
-	def detach_from_parent
-		reverse_each &:detach_from_parent
+	def detach_from_parent(...)
+		reverse_each { _1.detach_from_parent(...) }
 	end
 end
 
@@ -65,8 +65,8 @@ class Hash
 	
 	##
 	# See Alda::Event#detach_from_parent.
-	def detach_from_parent
-		each.reverse_each &:detach_from_parent
+	def detach_from_parent(...)
+		each.reverse_each { _1.detach_from_parent(...) }
 	end
 end
 
@@ -82,7 +82,7 @@ class String
 	
 	##
 	# See Alda::Event#detach_from_parent.
-	def detach_from_parent
+	def detach_from_parent(...)
 	end
 end
 
@@ -98,7 +98,7 @@ class Symbol
 	
 	##
 	# See Alda::Event#detach_from_parent.
-	def detach_from_parent
+	def detach_from_parent(...)
 	end
 end
 
@@ -114,7 +114,7 @@ class Numeric
 	
 	##
 	# See Alda::Event#detach_from_parent.
-	def detach_from_parent
+	def detach_from_parent(...)
 	end
 end
 
@@ -130,7 +130,7 @@ class Range
 	
 	##
 	# See Alda::Event#detach_from_parent.
-	def detach_from_parent
+	def detach_from_parent(...)
 	end
 end
 
@@ -146,7 +146,7 @@ class TrueClass
 	
 	##
 	# See Alda::Event#detach_from_parent.
-	def detach_from_parent
+	def detach_from_parent(...)
 	end
 end
 
@@ -162,7 +162,7 @@ class FalseClass
 	
 	##
 	# See Alda::Event#detach_from_parent.
-	def detach_from_parent
+	def detach_from_parent(...)
 	end
 end
 
@@ -178,7 +178,7 @@ class NilClass
 	
 	##
 	# See Alda::Event#detach_from_parent.
-	def detach_from_parent
+	def detach_from_parent(...)
 	end
 end
 

@@ -96,7 +96,7 @@ module Alda::EventList
 		when /\A[a-z][a-z].*\z/                   =~ name
 			arg = args.first
 			if block || !has_variable?(name) && args.size == 1 && arg.is_a?(Alda::Event) &&
-					!arg.is_event_of?(Alda::InlineLisp) && !arg.is_event_of?(LispIdentifier)
+					!arg.is_event_of?(Alda::InlineLisp) && !arg.is_event_of?(Alda::LispIdentifier)
 				Alda::SetVariable.new name, *args, &block
 			elsif has_variable?(name) && (args.empty? || args.size == 1 && arg.is_a?(Alda::Event))
 				sequence_sugar.(Alda::GetVariable.new name)

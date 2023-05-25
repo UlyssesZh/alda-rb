@@ -40,7 +40,7 @@ class Alda::Event
 	end
 	
 	##
-	# Delete itself from its #parent.
+	# Delete itself (or its topmost container if it has) from its #parent.
 	# If it is not at its #parent's end, raises Alda::OrderError.
 	#
 	# Here is a list of cases where the method is invoked:
@@ -60,9 +60,15 @@ class Alda::Event
 	# pushed to its #parent.
 	# However, the cases above requires the event be contained
 	# in another object.
-	def detach_from_parent
-		if @parent && self != (got = @parent.events.pop)
-			raise Alda::OrderError.new self, got
+	#
+	# The parameter +except+ specifies an Array of classes.
+	# If #parent is an instance of any of the classes in +except+,
+	# the method does nothing.
+	def detach_from_parent except = []
+		event = self
+		event = event.container while event.container
+		if @parent && except.none? { @parent.is_a? _1 } && event != (got = @parent.events.pop)
+			raise Alda::OrderError.new event, got
 		end
 	end
 	
@@ -194,8 +200,8 @@ class Alda::EventContainer < Alda::Event
 	# Overrides Alda::Event#to_alda_code.
 	def to_alda_code
 		result = @event.to_alda_code
-		result.concat ?', @labels.map(&:to_alda_code).join(?,) unless @labels&.empty?
-		result.concat ?*, @count.to_alda_code if @count && @count != 1
+		result.concat ?', @labels.map(&:to_alda_code).join(?,) unless @labels.empty?
+		result.concat ?*, @count.to_alda_code if @count != 1
 		result
 	end
 	
@@ -244,7 +250,7 @@ class Alda::EventContainer < Alda::Event
 	# ({alda-lang/alda#383}[https://github.com/alda-lang/alda/issues/383#issuecomment-886084486]),
 	# this method will warn about this if such thing happens and we are using \Alda 2.
 	#
-	#   Alda.generation = :v2
+	#   Alda.v2!
 	#   Alda::Score.new { x{a%1;b} }.to_s # (warns) => "a'1/b"
 	#
 	# This method will warn about repetitions inside a chord in both generations
@@ -356,6 +362,9 @@ end
 #   end
 #
 # You can operate a score by purely using inline lisp events.
+# The following example only works in Alda 1 due to breaking changes in Alda 2
+# ({alda-lang/alda#483}[https://github.com/alda-lang/alda/issues/483],
+# {alda-lang/alda#484}[https://github.com/alda-lang/alda/issues/484]).
 #
 #   Alda::Score.new do
 #     part 'piano'
@@ -736,7 +745,7 @@ class Alda::Chord < Alda::Event
 	#   Alda::Score.new { piano_; x { c; -e; g } }.play
 	#   # (plays chord Cm)
 	def initialize *events, &block
-		events.each { _1.parent = self }
+		events.each { _1.parent = self if _1.is_a? Alda::Event }
 		@events = events
 		super &block
 	end
@@ -846,13 +855,11 @@ class Alda::Part < Alda::Event
 		str[-1] = ''
 		@names.last.concat ?., str
 		if args.size == 1
-			unless @container
-				@container = Alda::EventContainer.new nil, @parent
-				@parent.events.delete self
-				@parent.push @container
-			end
-			@container.event = Alda::Sequence.join self, args.first.tap(&:detach_from_parent)
-			@container
+			arg = args.first.tap &:detach_from_parent
+			detach_from_parent
+			container = Alda::EventContainer.new Alda::Sequence.join(self, arg), @parent
+			@parent.events.push container
+			container
 		else
 			@container || self
 		end
@@ -1117,7 +1124,7 @@ class Alda::Sequence < Alda::Event
 	def self.join *events
 		new do
 			@events = events.map do |event|
-				while event.is_a?(Alda::EventContainer) && !event.count && event.labels.empty?
+				while event.is_a?(Alda::EventContainer) && event.count == 1 && event.labels.empty?
 					event = event.event
 				end
 				event.is_a?(Alda::Sequence) ? event.events : event
@@ -1155,19 +1162,13 @@ class Alda::SetVariable < Alda::Event
 	attr_accessor :name
 	
 	##
-	# The events passed to it using arguments instead of a block.
-	attr_reader :original_events
-	
-	##
 	# :call-seq:
 	#   new(name, *events, &block) -> Alda::SetVariable
 	#
 	# Creates an Alda::SetVariable.
 	def initialize name, *events, &block
 		@name = name.to_sym
-		@original_events = events
-		@events = events.clone
-		@events.each { _1.parent = self }
+		@events = events
 		super &block
 	end
 	
@@ -1183,7 +1184,8 @@ class Alda::SetVariable < Alda::Event
 	def on_contained
 		super
 		@parent.variables.add @name
-		@original_events.detach_from_parent
+		@events.detach_from_parent [self.class]
+		@events.each { _1.parent = self if _1.is_a? Alda::Event }
 	end
 	
 	##
