@@ -92,8 +92,9 @@ Now, it returns `{k1 v1 k2 v2}`.
 
 ### Others
 
-- Added CHANGELOG.md.
+- Added changelog.
 - Modified the homepage and changelog URI in gemspec.
+- Fixed the email in code of conduct.
 
 ## v0.2.1 (2020-08-13)
 
