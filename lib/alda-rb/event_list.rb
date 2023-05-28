@@ -327,4 +327,34 @@ class Alda::Score
 		@variables.clear
 		nil
 	end
+	
+	##
+	# :call-seq:
+	#   raw(contents) -> Alda::Raw
+	#
+	# Adds an Alda::Raw event to the event list and returns it.
+	# The event is not contained by a container.
+	#
+	#   Alda::Score.new { raw 'piano: c d e' }.to_s # => "piano: c d e"
+	def raw contents
+		Alda::Raw.new(contents).tap { @events.push _1 }
+	end
+	
+	##
+	# :call-seq:
+	#   l(head, *args) -> Alda::EventContainer
+	#
+	# Adds an Alda::EventContainer containing an Alda::InlineLisp event to the event list.
+	# In most cases, #method_misssing is a more convenient way to add an inline Lisp event.
+	# However, sometimes you may want to programmatically control which Lisp function to be called,
+	# or the function name is already a valid Ruby method name
+	# (for example, you want to use +f+ or +p+ as the dynamics but +f+ would be interpreted as a note
+	# and +p+ is already a Ruby method for printing)
+	# so that it cannot trigger #method_missing,
+	# then you should use this method.
+	#
+	#   Alda::Score.new { piano_; l :p; c }.to_s # => "piano: (p ) c"
+	def l head, *args
+		Alda::EventContainer.new(Alda::InlineLisp.new(head, *args), self).tap { @events.push _1 }
+	end
 end

@@ -21,7 +21,7 @@ class Alda::Sequence
 end
 
 Alda::Score.new do
-	piano_ tempo 60
+	piano_; tempo 60
 	%w[
 		c e g c5 e
 		c4 d a d5 f
@@ -62,7 +62,7 @@ Alda::Score.new do
 			v3 r8 s{ notes.each { absolute _1, '16' } }*2
 		end * 2
 	end
-	alda_code <<~ENDING
+	raw <<~ENDING
 		V1:
 			o2 c1 | c1 | c1~1s
 		V2:

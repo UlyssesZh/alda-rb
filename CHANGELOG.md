@@ -31,7 +31,7 @@ Documents that modified for notice about \Alda 2:
 - Alda::[], Alda::up?, Alda::down?, Alda::COMMANDS.
 - Alda::EventList#method_missing.
 - Alda::InlineLisp.
-- Alda::Array#to_alda_code, Alda::Hash#to_alda_code.
+- Array#to_alda_code, Hash#to_alda_code.
 
 Examples that are modified to work in \Alda 2:
 
@@ -52,10 +52,13 @@ instead of the event itself from the parent.
 
 New APIs:
 
+- Added Alda::Raw.
 - Added Alda::Utils::warn.
 - Added Alda::Event#is_event_of?. It is overridden in Alda::EventContainer#is_event_of?.
 - Added Alda::Event#== and Alda::EventList#==. It is overridden in many subclasses.
 - Added Alda::EventContainer#check_in_chord.
+- Added Alda::EventList#l.
+- Added Alda::EventList#raw.
 
 Slightly improved docs:
 
@@ -77,7 +80,9 @@ Much better docs:
 
 New examples:
 
-- dynamics.
+- dynamics,
+- track-volume,
+- variables-2.
 
 ### BREAKING deletions
 

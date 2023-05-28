@@ -338,7 +338,7 @@ end
 ##
 # An inline lisp event. An Alda::EventContainer containing
 # an Alda::InlineLisp can be derived using event list
-# sugar. See Alda::EventList#method_missing.
+# sugar (see Alda::EventList#method_missing) or by using Alda::EventList#l.
 #
 # Sometimes you need help from Alda::LispIdentifier.
 #
@@ -1284,5 +1284,44 @@ class Alda::LispIdentifier < Alda::Event
 	# and has the same #name as +lisp_identifier+ (using <tt>==</tt>).
 	def == other
 		super || other.is_a?(Alda::LispIdentifier) && @name == other.name
+	end
+end
+
+##
+# A special event that contains raw \Alda codes.
+# This is a walkaround for the absence of <tt>alda-code</tt> function in \Alda 2
+# ({alda-lang/alda#379}[https://github.com/alda-lang/alda/issues/379]).
+# You can use Alda::EventList#raw to add an Alda::Raw event to the event list.
+class Alda::Raw < Alda::Event
+	
+	##
+	# The raw \Alda codes.
+	attr_accessor :contents
+	
+	##
+	# :call-seq:
+	#   new(code) -> Alda::Raw
+	#
+	# Creates an Alda::Raw.
+	def initialize contents
+		super()
+		@contents = contents
+	end
+	
+	##
+	# Overrides Alda::Event#to_alda_code.
+	def to_alda_code
+		@contents
+	end
+	
+	##
+	# :call-seq:
+	#   raw == other -> true or false
+	#
+	# Overrides Alda::Event#==.
+	# Returns true if +other+ is an Alda::Raw
+	# and has the same #contents as +raw+ (using <tt>==</tt>).
+	def == other
+		super || other.is_a?(Alda::Raw) && @contents == other.contents
 	end
 end

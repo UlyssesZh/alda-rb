@@ -45,6 +45,9 @@ class Alda::Test < Minitest::Test
 		             q { ee [aa, bb, cc(dd)] })
 		assert_equal({v1: '(defn [x] (inc x))', v2: '(defn \'(x) (inc x))'},
 		             q { defn [_x_], inc(_x_) })
+		assert_equal({v1: '(p )', v2: '(p )'}, q { l :p })
+		assert_equal({v1: '(foo 520 1108 :bar)', v2: '(foo 520 1108 \'bar)'},
+		             q { l :foo, 520, 1108, :bar })
 	end
 	
 	def test_variable
@@ -75,6 +78,10 @@ class Alda::Test < Minitest::Test
 	def test_voice
 		assert_equal({v1: '[V1: V2: V0:]', v2: '[V1: V2: V0:]'},
 		             q { v1 v2 v0 })
+	end
+	
+	def test_raw
+		assert_equal({v1: 'violin: a b c', v2: 'violin: a b c'}, q { raw 'violin: a b c' })
 	end
 	
 	def test_example_inline_lisp
@@ -241,6 +248,10 @@ class Alda::Test < Minitest::Test
 			             v1: '(tempo! 108) piano: o4 c8 d e f [g4 g a f g e f d e c] d4~8 [o3 b8 o4 c2]',
 			             v2: '(tempo! 108) piano: o4 c8 d e f [g4 g a f g e f d e c] d4~8 [o3 b8 o4 c2]'
 		             }, got)
+		
+		assert_equal({v1: "piano: c d e", v2: "piano: c d e"}, q { raw 'piano: c d e' })
+		
+		assert_equal({v1: "piano: (p ) c", v2: "piano: (p ) c"}, q { piano_; l :p; c })
 	end
 	
 	def test_example_chord
