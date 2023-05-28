@@ -109,7 +109,7 @@ but the new features in 0.2.0 made some codes in that file stop working.
 - REPL now supports `map`, `score`, and `new`.
 - Added a lot of docs. Can be seen [here](https://ulysseszh.github.io/doc/alda-rb).
 - Added Alda::Event#detach_from_parent.
-- Fixed the bug that dot accessor of `Alda::Part` does not return the container (or the part itself).
+- Fixed the bug that dot accessor of Alda::Part does not return the container (or the part itself).
 - Added Alda::LispIdentifier.
 - Fixed Alda::EventList#import now returns `nil`.
 - Added some unit tests.
@@ -119,7 +119,7 @@ but the new features in 0.2.0 made some codes in that file stop working.
 ## v0.1.4 (2020-04-23)
 
 - The Ruby requirements become `">= 2.7"`, so update your Ruby.
-- Added a colorful REPL! Run `Alda::repl` and see.
+- Added a colorful REPL! Run Alda::repl and see.
 ```
 $ ruby -ralda-rb -e "Alda.repl"
 > puts status

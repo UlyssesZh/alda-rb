@@ -22,8 +22,8 @@ end
 
 class Alda::Sequence
 	def play_solfege solfege
-		v1; octave solfege.octave; note pitch solfege.letter
-		v2; octave solfege.octave-1; note pitch solfege.letter
+		v1; octave solfege.octave; note pitch [solfege.letter]
+		v2; octave solfege.octave-1; note pitch [solfege.letter]
 	end
 	def play_hanon ary, octave, delta
 		solfeges = ary.map { Solfege.new _1, octave }
