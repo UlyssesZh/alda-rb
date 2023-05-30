@@ -90,7 +90,9 @@ module Alda
 	COMMANDS.each do |command, generations|
 		define_method command do |*args, **opts|
 			Alda::GenerationError.assert_generation generations
-			Alda.pipe(command, *args, **opts, &:read).tap { raise CommandLineError.new $?, _1 if $?.exitstatus.nonzero? }
+			result = Alda.pipe command, *args, **opts, &:read
+			raise CommandLineError.new $?, result if $?.exitstatus.nonzero?
+			result
 		end.tap { module_function _1 }
 	end
 	
@@ -108,6 +110,12 @@ module Alda
 		# Not the subcommand options.
 		# Clear it using ::clear_options.
 		attr_reader :options
+		
+		##
+		# The commandline environment variables used when running +alda+ on command line.
+		# A Hash.
+		# It is <tt>{"ALDA_DISABLE_SPAWNING"=>"yes","ALDA_DISABLE_TELEMETRY"=>"yes"}</tt> by default.
+		attr_reader :env
 		
 		##
 		# The major version of the +alda+ command used.
@@ -154,6 +162,10 @@ module Alda
 	
 	@executable = 'alda'
 	@options = {}
+	@env = {
+		'ALDA_DISABLE_SPAWNING' => 'yes',
+		'ALDA_DISABLE_TELEMETRY' => 'yes'
+	}
 	v2!
 	
 	##
@@ -181,7 +193,7 @@ module Alda
 		opts.each &add_option
 		# subprocess
 		spawn_options = Alda::Utils.win_platform? ? { new_pgroup: true } : { pgroup: true }
-		IO.popen args, **spawn_options, &block
+		IO.popen Alda.env, args, **spawn_options, &block
 	end
 	
 	##

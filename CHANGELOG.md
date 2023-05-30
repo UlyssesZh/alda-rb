@@ -2,10 +2,14 @@
 
 ## v0.3.1 (not released)
 
-### BREAKING changes of API
+### New API
 
 - Added Alda::NREPLServerError#status.
-Now `status` should be specified as a parameter of Alda::NREPLServerError::new.
+- Added Alda::env.
+
+### BREAKING changes of API
+
+- Now `status` should be specified as a parameter of Alda::NREPLServerError::new.
 
 ### Fixed bugs
 

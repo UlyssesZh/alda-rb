@@ -243,7 +243,8 @@ class Alda::REPL
 	def initialize color: true, preview: true, **opts
 		@score = TempScore.new self
 		@binding = @score.get_binding
-		@lex = RubyLex.new
+		# IRB once changed the API of RubyLex#initialize. Take care of that.
+		@lex = RubyLex.new *(RubyLex.instance_method(:initialize).arity == 0 ? [] : [@binding])
 		@color = color
 		@preview = preview
 		setup_repl opts
@@ -261,8 +262,8 @@ class Alda::REPL
 		if Alda.v1?
 			@history = StringIO.new
 		else
-			@port = opts[:port].to_i
-			@host = opts[:host] || 'localhost'
+			@port = (opts.fetch :port, -1).to_i
+			@host = opts.fetch :host, 'localhost'
 			unless @port.positive? && %w[localhost 127.0.0.1].include?(opts[:host]) &&
 			       Alda.processes.any? { _1[:port] == @port && _1[:type] == :repl_server }
 				@nrepl_pipe = Alda.pipe :repl, **opts, server: true
@@ -356,7 +357,7 @@ class Alda::REPL
 		indent = 0
 		begin
 			result.concat readline(indent).tap { return unless _1 }, ?\n
-			# RubyLex#check_state is different in Ruby 3 and Ruby 2. Take care of that.
+			# IRB once changed the API of RubyLex#check_state. Take care of that.
 			opts = @lex.method(:check_state).arity.positive? ? {} : { context: @binding }
 			ltype, indent, continue, block_open = @lex.check_state result, **opts
 		rescue Interrupt
