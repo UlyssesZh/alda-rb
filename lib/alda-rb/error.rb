@@ -59,14 +59,25 @@ class Alda::NREPLServerError < StandardError
 	attr_reader :problems
 	
 	##
+	# The status returned by the nREPL server.
+	# It is an Array of Symbol.
+	# Symbols must appear are +:done+, +:error+, and there may be +:unknown_op+.
+	attr_reader :status
+	
+	##
 	# :call-seq:
-	#   new(host, port, problems) -> Alda::NREPLServerError
+	#   new(host, port, problems, status) -> Alda::NREPLServerError
 	#
 	# Creates a Alda::NREPLServerError object.
 	# Raises Alda::GenerationError if the current generation is not \Alda 2.
-	def initialize host, port, problems
+	def initialize host, port, problems, status
 		Alda::GenerationError.assert_generation [:v2]
-		super problems.join ?\n
+		@status = status.map { Alda::Utils.slug_to_snake _1 }
+		if @status.include? :unknown_op
+			super 'unknown operation'
+		else
+			super problems.join ?\n
+		end
 		@host = host
 		@port = port
 		@problems = problems

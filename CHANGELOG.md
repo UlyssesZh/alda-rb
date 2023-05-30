@@ -2,15 +2,23 @@
 
 ## v0.3.1 (not released)
 
+### BREAKING changes of API
+
+- Added Alda::NREPLServerError#status.
+Now `status` should be specified as a parameter of Alda::NREPLServerError::new.
+
 ### Fixed bugs
 
 - Fixed: `alda-irb` does not run correctly in Ruby 3.
+- Fixed: cannot handle unknown-op error of nREPL server.
+- Fixed: an excess message printed when exiting \REPL on Windows.
 
 ### Other changes
 
 - Fixed dependencies.
 - Fixed some changelog of 0.3.0.
 - Added a gem badge in README.
+- Updated bundler version.
 
 ## v0.3.0 (2023-05-29)
 

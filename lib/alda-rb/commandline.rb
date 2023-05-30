@@ -194,7 +194,7 @@ module Alda
 	# and each Hash has the following keys:
 	# - +:id+: the player-id of the process, a three-letter String.
 	# - +:port+: the port number of the process, an Integer.
-	# - +:state+: the state of the process, a Symbol (may be +nil+, +:ready+, +:active+ etc.).
+	# - +:state+: the state of the process, a Symbol (may be +nil+, +:ready+, +:active+, or +:starting+).
 	# - +:expiry+: a human-readable description of expiry time of the process, a String (may be +nil+).
 	# - +:type+: the type of the process, a Symbol (may be +:player+ or +:repl_server+).
 	def processes

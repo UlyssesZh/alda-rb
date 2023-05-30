@@ -261,14 +261,12 @@ class Alda::REPL
 		if Alda.v1?
 			@history = StringIO.new
 		else
-			if opts[:port] && [nil, 'localhost', '127.0.0.1'].include?(opts[:host]) &&
-			   Alda.processes.any? { _1[:port] == opts[:port].to_i && _1[:type] == :repl_server }
-				@port = opts[:port].to_i
-				@host = opts[:host] || 'localhost'
-			else
+			@port = opts[:port].to_i
+			@host = opts[:host] || 'localhost'
+			unless @port.positive? && %w[localhost 127.0.0.1].include?(opts[:host]) &&
+			       Alda.processes.any? { _1[:port] == @port && _1[:type] == :repl_server }
 				@nrepl_pipe = Alda.pipe :repl, **opts, server: true
-				/nrepl:\/\/(?<host>[a-zA-Z0-9._\-]+):(?<port>\d+)/ =~ @nrepl_pipe.gets
-				@host = host
+				/nrepl:\/\/[a-zA-Z0-9._\-]+:(?<port>\d+)/ =~ @nrepl_pipe.gets
 				@port = port.to_i
 				Process.detach @nrepl_pipe.pid
 			end
@@ -314,8 +312,8 @@ class Alda::REPL
 	def message op, **params
 		result = raw_message op: Alda::Utils.snake_to_slug(op), **params
 		result.transform_keys! { Alda::Utils.slug_to_snake _1 }
-		if result.delete(:status).include? 'error'
-			raise Alda::NREPLServerError.new @host, @port, result.delete(:problems)
+		if (status = result.delete :status).include? 'error'
+			raise Alda::NREPLServerError.new @host, @port, result.delete(:problems), status
 		end
 		case result.size
 		when 0 then nil
@@ -358,6 +356,7 @@ class Alda::REPL
 		indent = 0
 		begin
 			result.concat readline(indent).tap { return unless _1 }, ?\n
+			# RubyLex#check_state is different in Ruby 3 and Ruby 2. Take care of that.
 			opts = @lex.method(:check_state).arity.positive? ? {} : { context: @binding }
 			ltype, indent, continue, block_open = @lex.check_state result, **opts
 		rescue Interrupt
@@ -457,7 +456,9 @@ class Alda::REPL
 		else
 			if @nrepl_pipe
 				if Alda::Utils.win_platform?
-					system 'taskkill', '/f', '/pid', @nrepl_pipe.pid.to_s
+					unless IO.popen(['taskkill', '/f', '/pid', @nrepl_pipe.pid.to_s], &:read).include? 'SUCCESS'
+						Alda::Warning.warn 'failed to kill nREPL server; may become zombie process'
+					end
 				else
 					Process.kill :INT, @nrepl_pipe.pid
 				end
