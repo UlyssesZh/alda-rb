@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## v0.3.0 (not released)
+## v0.3.0 (2023-05-29)
 
 ### Changes for \Alda 2
 
