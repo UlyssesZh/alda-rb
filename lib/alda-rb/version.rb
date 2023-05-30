@@ -7,5 +7,5 @@ module Alda
 	# The version number of alda-rb.
 	#
 	# The same as that in alda-rb gem spec.
-	VERSION = '0.3.0'
+	VERSION = '0.3.1'
 end

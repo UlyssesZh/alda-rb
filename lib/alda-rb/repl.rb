@@ -358,7 +358,8 @@ class Alda::REPL
 		indent = 0
 		begin
 			result.concat readline(indent).tap { return unless _1 }, ?\n
-			ltype, indent, continue, block_open = @lex.check_state result
+			opts = @lex.method(:check_state).arity.positive? ? {} : { context: @binding }
+			ltype, indent, continue, block_open = @lex.check_state result, **opts
 		rescue Interrupt
 			$stdout.puts
 			return ''

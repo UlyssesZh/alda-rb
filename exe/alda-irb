@@ -24,6 +24,6 @@ OptionParser.new do |opts|
 end.parse!
 
 Alda.deduce_generation
-opts = {color: color, preview: preview}
+opts = { color: color, preview: preview }
 opts.merge! host: host, port: port unless Alda.v1?
 Alda::REPL.new(**opts).run

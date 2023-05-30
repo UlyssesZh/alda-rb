@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## v0.3.1 (not released)
+
+### Fixed bugs
+
+- Fixed: `alda-irb` does not run correctly in Ruby 3.
+
+### Other changes
+
+- Fixed dependencies.
+- Fixed some changelog of 0.3.0.
+- Added a gem badge in README.
+
 ## v0.3.0 (2023-05-29)
 
 ### Changes for \Alda 2
@@ -8,12 +20,12 @@ Added API for support \Alda 2 while still being able to support \Alda 1:
 
 - Added Alda::COMMANDS_FOR_VERSIONS and Alda::GENERATIONS.
 - Added Alda::generation, which can be `:v1` or `:v2`.
-Specifically, one of the values in the array Alda::GENERATIONS.
+  Specifically, one of the values in the array Alda::GENERATIONS.
 - Added Alda::v1?, Alda::v2?, Alda::v1!, Alda::v2! (See Alda::GENERATIONS).
 - Added Alda::deduce_generation.
 - Added Alda::GenerationError.
 - In Alda::Chord#to_alda_code, considering an undocumented breaking change about chords,
-the behavior is slightly different for \Alda 1 and \Alda 2.
+  the behavior is slightly different for \Alda 1 and \Alda 2.
 - Added Thread#inside_alda_list.
 - Added Alda::REPL#message and Alda::REPL#raw_message.
 
@@ -25,7 +37,7 @@ APIs that are modified to support \Alda 2:
 - Because \Alda 2 does not have the notion of down and up, if we are in v2,
   Alda::down? will always return false and Alda::up? will always return true.
 - Array#to_alda_code and Hash#to_alda_code behaves differently for \Alda 1 and \Alda 2 regarding
-[a breaking change](https://github.com/alda-lang/alda/blob/master/doc/alda-2-migration-guide.md#attribute-syntax-has-changed-in-some-cases).
+  [a breaking change](https://github.com/alda-lang/alda/blob/master/doc/alda-2-migration-guide.md#attribute-syntax-has-changed-in-some-cases).
 
 Documents that modified for notice about \Alda 2:
 
@@ -47,11 +59,11 @@ Examples that are modified to work in \Alda 2:
 New features:
 
 - Added warnings about structures that probably trigger errors in \Alda.
-See Alda::EventContainer#check_in_chord, Alda::EventList#method_missing.
+  See Alda::EventContainer#check_in_chord, Alda::EventList#method_missing.
 - Now you can specify a parameter in Alda::Event#detach_from_parent to exclude some
-classes of parents that will be detached from.
+  classes of parents that will be detached from.
 - (Potentially BREAKING) Alda::Event#detach_from_parent now tries to detach the topmost container
-instead of the event itself from the parent.
+  instead of the event itself from the parent.
 - Added a commandline program called `alda-irb`. See Alda::REPL.
 - Traceback of exception will also be printed now if an Interrupt is caught in \REPL.
 - <kbd>Ctrl</kbd>+<kbd>C</kbd> can now be used to discard the current input in \REPL.
@@ -63,7 +75,7 @@ New APIs:
 
 - Added Alda::Raw.
 - Added Alda::Utils::warn, Alda::Utils::win_platform?,
-Alda::Utils::snake_to_slug, Alda::Utils::slug_to_snake.
+  Alda::Utils::snake_to_slug, Alda::Utils::slug_to_snake.
 - Added Alda::Event#is_event_of?. It is overridden in Alda::EventContainer#is_event_of?.
 - Added Alda::Event#== and Alda::EventList#==. It is overridden in many subclasses.
 - Added Alda::EventContainer#check_in_chord.
@@ -72,7 +84,7 @@ Alda::Utils::snake_to_slug, Alda::Utils::slug_to_snake.
 - Added Alda::REPL#color, Alda::REPL#preview.
 - Added Alda::REPL#setup_repl, Alda::REPL#readline.
 - Added Alda::REPL::TempScore#new_score, Alda::REPL::TempScore#score_text,
-Alda::REPL::TempScore#score_data, Alda::REPL::TempScore#score_events.
+  Alda::REPL::TempScore#score_data, Alda::REPL::TempScore#score_events.
 - Added Alda::pipe.
 - Added Alda::processes.
 - Added Alda::NREPLServerError.
@@ -81,10 +93,9 @@ Alda::REPL::TempScore#score_data, Alda::REPL::TempScore#score_events.
 Slightly improved docs:
 
 - Alda::EventContainer#event.
-- The overriding +to_alda_code+'s and +on_contained+'s.
+- The overriding `to_alda_code`'s and `on_contained`'s.
 - Alda::Sequence, Alda::Sequence::RefineFlatten#flatten.
 - The patches to Ruby's core classes.
-- Alda::repl.
 - Kernel.
 - Alda::EventList::new.
 - Alda::OrderError::new.
@@ -109,7 +120,7 @@ Removed APIs:
 
 - Removed Alda::SetVariable#original_events.
 - Removed Alda::repl. Now calling `Alda.repl` will trigger commandline `alda repl`.
-For the old REPL function, use `Alda::REPL.new.run` instead.
+  For the old REPL function, use `Alda::REPL.new.run` instead.
 - Removed Alda::REPL::TempScore#history.
 
 Modified APIs or features:
@@ -120,11 +131,11 @@ Modified APIs or features:
 ### Fixed bugs
 
 - Fixed: sometimes Alda::Event#parent returns wrong result
-because it is not updated in some cases.
+  because it is not updated in some cases.
 - Fixed (potentially BREAKING): Hash#to_alda_code returns `[[k1 v1] [k2 v2]]`.
-Now, it returns `{k1 v1 k2 v2}`.
+  Now, it returns `{k1 v1 k2 v2}`.
 - Use reline instead of readline in Alda::REPL
-because Ruby 3.3 is dropping the shipment of readline-ext.
+  because Ruby 3.3 is dropping the shipment of readline-ext.
 
 ### Others
 
@@ -135,9 +146,9 @@ because Ruby 3.3 is dropping the shipment of readline-ext.
 ## v0.2.1 (2020-08-13)
 
 - Fixed the bug in `examples/bwv846_prelude.rb`.
-The file isn't changed when the version change
-from [v0.1.4](#v014-2020-04-23) to [v0.2.0](#v020-2020-05-08)
-but the new features in 0.2.0 made some codes in that file stop working.
+  The file isn't changed when the version change
+  from [v0.1.4](#v014-2020-04-23) to [v0.2.0](#v020-2020-05-08)
+  but the new features in 0.2.0 made some codes in that file stop working.
 
 ## v0.2.0 (2020-05-08)
 
@@ -178,9 +189,9 @@ c c c c c
 > exit
 ```
 - More than 2 events written together will become an Alda::Sequence object
-(contained by an Alda::EventContainer).
-Events that can use such sugar includes:
-part (supports dot accessor), note, rest, octave, voice, marker, at-marker.
+  (contained by an Alda::EventContainer).
+  Events that can use such sugar includes:
+  part (supports dot accessor), note, rest, octave, voice, marker, at-marker.
 ```ruby
 Alda::Score.new { p((c d e).event.class) } # => Alda::Sequence
 ```

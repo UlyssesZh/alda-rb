@@ -1,7 +1,9 @@
 PATH
   remote: .
   specs:
-    alda-rb (0.3.0)
+    alda-rb (0.3.1)
+      bencode
+      colorize
 
 GEM
   remote: https://rubygems.org/

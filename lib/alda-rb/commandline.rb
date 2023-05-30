@@ -165,7 +165,7 @@ module Alda
 	# or pass the IO to the block.
 	# See COMMANDS_FOR_VERSIONS for an explanation of +args+ and +opts+.
 	def pipe command, *args, **opts, &block
-		add_option = ->key, val do
+		add_option = ->((key, val)) do
 			next unless val
 			args.push "--#{Alda::Utils.snake_to_slug key}"
 			args.push val.to_s unless val == true
@@ -180,7 +180,7 @@ module Alda
 		# subcommand options
 		opts.each &add_option
 		# subprocess
-		spawn_options = Alda::Utils.win_platform? ? {new_pgroup: true} : {pgroup: true}
+		spawn_options = Alda::Utils.win_platform? ? { new_pgroup: true } : { pgroup: true }
 		IO.popen args, **spawn_options, &block
 	end
 	
@@ -205,7 +205,7 @@ module Alda
 			state = state == ?- ? nil : state.to_sym
 			expiry = nil if expiry == ?-
 			type = Alda::Utils.slug_to_snake type
-			{id: id, port: port, state: state, expiry: expiry, type: type}
+			{ id: id, port: port, state: state, expiry: expiry, type: type }
 		end
 	end
 	

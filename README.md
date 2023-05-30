@@ -1,5 +1,7 @@
 # alda-rb
 
+[![Gem Version](https://badge.fury.io/rb/alda-rb.svg)](https://badge.fury.io/rb/alda-rb)
+
 A Ruby library for live-coding music with [Alda](https://alda.io/).
 Also provides an alda DSL in Ruby.
 
