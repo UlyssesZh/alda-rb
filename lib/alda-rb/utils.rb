@@ -1,7 +1,6 @@
 ##
 # Some useful functions.
 module Alda::Utils
-	module_function
 	
 	##
 	# :call-seq:
@@ -24,11 +23,25 @@ module Alda::Utils
 		Gem.win_platform?
 	end
 	
+	##
+	# :call-seq:
+	#   snake_to_slug(sym) -> String
+	#
+	# Converts a snake_case Symbol to a slug-case String.
+	# The inverse of ::slug_to_snake.
 	def snake_to_slug sym
 		sym.to_s.gsub ?_, ?-
 	end
 	
+	##
+	# :call-seq:
+	#   slug_to_snake(str) -> Symbol
+	#
+	# Converts a slug-case String to a snake_case Symbol.
+	# The inverse of ::snake_to_slug.
 	def slug_to_snake str
 		str.to_s.gsub(?-, ?_).to_sym
 	end
+	
+	module_function :warn, :win_platform?, :snake_to_slug, :slug_to_snake
 end

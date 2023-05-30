@@ -155,11 +155,15 @@ module Alda
 	@executable = 'alda'
 	@options = {}
 	v2!
-	module_function
 	
 	##
-	#--
-	# TODO docs
+	# :call-seq:
+	#   pipe(command, *args, **opts) -> IO
+	#   pipe(command, *args, **opts) { |io| ... } -> Object
+	#
+	# Runs +alda+ in command line as a child process and returns the pipe IO
+	# or pass the IO to the block.
+	# See COMMANDS_FOR_VERSIONS for an explanation of +args+ and +opts+.
 	def pipe command, *args, **opts, &block
 		add_option = ->key, val do
 			next unless val
@@ -181,8 +185,18 @@ module Alda
 	end
 	
 	##
-	#--
-	# TODO docs
+	# :call-seq:
+	#   processes() -> Array
+	#
+	# Returns a Array of details about running \Alda processes.
+	# Only available for \Alda 2.
+	# Each element in the Array is a Hash,
+	# and each Hash has the following keys:
+	# - +:id+: the player-id of the process, a three-letter String.
+	# - +:port+: the port number of the process, an Integer.
+	# - +:state+: the state of the process, a Symbol (may be +nil+, +:ready+, +:active+ etc.).
+	# - +:expiry+: a human-readable description of expiry time of the process, a String (may be +nil+).
+	# - +:type+: the type of the process, a Symbol (may be +:player+ or +:repl_server+).
 	def processes
 		raise GenerationError.new [:v2] if v1?
 		Alda.ps.lines(chomp: true)[1..].map do |line|
@@ -225,5 +239,7 @@ module Alda
 		/(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)/ =~ Alda.version
 		@generation = major == '1' ? :v1 : :v2
 	end
+	
+	module_function :pipe, :processes, :up?, :down?, :deduce_generation
 	
 end

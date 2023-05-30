@@ -71,7 +71,8 @@ Alda::Utils::snake_to_slug, Alda::Utils::slug_to_snake.
 - Added Alda::EventList#raw.
 - Added Alda::REPL#color, Alda::REPL#preview.
 - Added Alda::REPL#setup_repl, Alda::REPL#readline.
-- Added Alda::REPL::TempScore#new_score, Alda::REPL::TempScore#score_text, Alda::REPL::TempScore#score_data.
+- Added Alda::REPL::TempScore#new_score, Alda::REPL::TempScore#score_text,
+Alda::REPL::TempScore#score_data, Alda::REPL::TempScore#score_events.
 - Added Alda::pipe.
 - Added Alda::processes.
 - Added Alda::NREPLServerError.
@@ -114,6 +115,7 @@ For the old REPL function, use `Alda::REPL.new.run` instead.
 Modified APIs or features:
 
 - Now Alda::REPL#play_score does not call Alda::REPL#try_command.
+- Alda::Score#load now use Alda::Raw instead of an Alda::InlineLisp to load a file.
 
 ### Fixed bugs
 

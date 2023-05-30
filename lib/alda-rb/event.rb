@@ -197,6 +197,9 @@ class Alda::EventContainer < Alda::Event
 	end
 	
 	##
+	# :call-seq:
+	#   to_alda_code() -> String
+	#
 	# Overrides Alda::Event#to_alda_code.
 	def to_alda_code
 		result = @event.to_alda_code
@@ -432,6 +435,9 @@ class Alda::InlineLisp < Alda::Event
 	end
 	
 	##
+	# :call-seq:
+	#   to_alda_code() -> String
+	#
 	# Overrides Alda::Event#to_alda_code.
 	def to_alda_code
 		"(#{head} #{args.map(&:to_alda_code).join ' '})"
@@ -562,6 +568,9 @@ class Alda::Note < Alda::Event
 	end
 	
 	##
+	# :call-seq:
+	#   to_alda_code() -> String
+	#
 	# Overrides Alda::Event#to_alda_code.
 	def to_alda_code
 		result = @pitch + @duration
@@ -611,6 +620,9 @@ class Alda::Rest < Alda::Event
 	end
 	
 	##
+	# :call-seq:
+	#   to_alda_code() -> String
+	#
 	# Overrides Alda::Event#to_alda_code.
 	def to_alda_code
 		?r + @duration
@@ -690,6 +702,9 @@ class Alda::Octave < Alda::Event
 	end
 	
 	##
+	# :call-seq:
+	#   to_alda_code() -> String
+	#
 	# Overrides Alda::Event#to_alda_code.
 	def to_alda_code
 		case @up_or_down <=> 0
@@ -751,6 +766,9 @@ class Alda::Chord < Alda::Event
 	end
 	
 	##
+	# :call-seq:
+	#   to_alda_code() -> String
+	#
 	# Overrides Alda::Event#to_alda_code.
 	#
 	# Behaves differently for \Alda 1 and \Alda 2:
@@ -832,6 +850,9 @@ class Alda::Part < Alda::Event
 	end
 	
 	##
+	# :call-seq:
+	#   to_alda_code() -> String
+	#
 	# Overrides Alda::Event#to_alda_code.
 	def to_alda_code
 		result = @names.join ?/
@@ -902,6 +923,9 @@ class Alda::Voice < Alda::Event
 	end
 	
 	##
+	# :call-seq:
+	#   to_alda_code() -> String
+	#
 	# Overrides Alda::Event#to_alda_code.
 	def to_alda_code
 		?V + num + ?:
@@ -953,6 +977,9 @@ class Alda::Cram < Alda::Event
 	end
 	
 	##
+	# :call-seq:
+	#   to_alda_code() -> String
+	#
 	# Overrides Alda::Event#to_alda_code.
 	def to_alda_code
 		"{#{events_alda_codes}}#@duration"
@@ -999,6 +1026,9 @@ class Alda::Marker < Alda::Event
 	end
 	
 	##
+	# :call-seq:
+	#   to_alda_code() -> String
+	#
 	# Overrides Alda::Event#to_alda_code.
 	def to_alda_code
 		?% + @name
@@ -1042,6 +1072,9 @@ class Alda::AtMarker < Alda::Event
 	end
 	
 	##
+	# :call-seq:
+	#   to_alda_code() -> String
+	#
 	# Overrides Alda::Event#to_alda_code.
 	def to_alda_code
 		?@ + @name
@@ -1108,6 +1141,9 @@ class Alda::Sequence < Alda::Event
 	using RefineFlatten
 	
 	##
+	# :call-seq:
+	#   to_alda_code() -> String
+	#
 	# Overrides Alda::Event#to_alda_code.
 	def to_alda_code
 		"[#{events_alda_codes}]"
@@ -1173,6 +1209,9 @@ class Alda::SetVariable < Alda::Event
 	end
 	
 	##
+	# :call-seq:
+	#   to_alda_code() -> String
+	#
 	# Specially, the returned value ends with a newline "\\n".
 	# Overrides Alda::Event#to_alda_code.
 	def to_alda_code
@@ -1224,6 +1263,9 @@ class Alda::GetVariable < Alda::Event
 	end
 	
 	##
+	# :call-seq:
+	#   to_alda_code() -> String
+	#
 	# Overrides Alda::Event#to_alda_code.
 	def to_alda_code
 		@name.to_s
@@ -1270,6 +1312,9 @@ class Alda::LispIdentifier < Alda::Event
 	end
 	
 	##
+	# :call-seq:
+	#   to_alda_code() -> String
+	#
 	# Overrides Alda::Event#to_alda_code.
 	def to_alda_code
 		@name
@@ -1309,6 +1354,9 @@ class Alda::Raw < Alda::Event
 	end
 	
 	##
+	# :call-seq:
+	#   to_alda_code() -> String
+	#
 	# Overrides Alda::Event#to_alda_code.
 	def to_alda_code
 		@contents

@@ -15,6 +15,9 @@ end
 class Array
 	
 	##
+	# :call-seq:
+	#   to_alda_code() -> String
+	#
 	# See Alda::Event#to_alda_code.
 	# Behaves differently for \Alda 1 and \Alda 2 (due to
 	# {a breaking change}[https://github.com/alda-lang/alda/blob/master/doc/alda-2-migration-guide.md#attribute-syntax-has-changed-in-some-cases]).
@@ -45,6 +48,9 @@ end
 class Hash
 	
 	##
+	# :call-seq:
+	#   to_alda_code() -> String
+	#
 	# See Alda::Event#to_alda_code.
 	# Behaves differently for \Alda 1 and \Alda 2 (due to
 	# {a breaking change}[https://github.com/alda-lang/alda/blob/master/doc/alda-2-migration-guide.md#attribute-syntax-has-changed-in-some-cases]).
@@ -75,6 +81,9 @@ end
 class String
 	
 	##
+	# :call-seq:
+	#   to_alda_code() -> String
+	#
 	# See Alda::Event#to_alda_code.
 	def to_alda_code
 		dump
@@ -91,6 +100,9 @@ end
 class Symbol
 	
 	##
+	# :call-seq:
+	#   to_alda_code() -> String
+	#
 	# See Alda::Event#to_alda_code.
 	def to_alda_code
 		"#{Alda.v1? ? ?: : Thread.current.inside_alda_list ? '' : ?'}#{to_s}"
@@ -107,6 +119,9 @@ end
 class Numeric
 	
 	##
+	# :call-seq:
+	#   to_alda_code() -> String
+	#
 	# See Alda::Event#to_alda_code.
 	def to_alda_code
 		inspect
@@ -123,6 +138,9 @@ end
 class Range
 	
 	##
+	# :call-seq:
+	#   to_alda_code() -> String
+	#
 	# See Alda::Event#to_alda_code.
 	def to_alda_code
 		"#{first}-#{last}"
@@ -139,6 +157,9 @@ end
 class TrueClass
 	
 	##
+	# :call-seq:
+	#   to_alda_code() -> String
+	#
 	# See Alda::Event#to_alda_code.
 	def to_alda_code
 		'true'
@@ -155,6 +176,9 @@ end
 class FalseClass
 	
 	##
+	# :call-seq:
+	#   to_alda_code() -> String
+	#
 	# See Alda::Event#to_alda_code.
 	def to_alda_code
 		'false'
@@ -171,6 +195,9 @@ end
 class NilClass
 	
 	##
+	# :call-seq:
+	#   to_alda_code() -> String
+	#
 	# See Alda::Event#to_alda_code.
 	def to_alda_code
 		'nil'

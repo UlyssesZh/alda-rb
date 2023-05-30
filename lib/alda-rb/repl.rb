@@ -34,6 +34,7 @@ require 'socket'
 # To start an \REPL session in a ruby program, use #run.
 # To start an \REPL session conveniently from command line,
 # run command <tt>alda-irb</tt>.
+# For details about this command line tool, run <tt>alda-irb --help</tt>.
 #
 #   $ alda-irb
 #   > p processes.last
@@ -57,12 +58,25 @@ require 'socket'
 #   > exit
 #
 # Notice that there is a significant difference between \Alda 1 \REPL and \Alda 2 \REPL.
-# In short, \Alda 2 has a much more powerful \REPL than \Alda 1.
+# In short, \Alda 2 has a much more powerful \REPL than \Alda 1,
+# so it dropped the <tt>--history</tt> option in the <tt>alda play</tt> command line interface
+# ({alda-lang/alda#367}[https://github.com/alda-lang/alda/issues/367]).
 # It has an nREPL server, and this class simply functions by sending messages to the nREPL server.
 # However, for \Alda 1, this class maintains necessary information
-# in the memory of the Ruby program.
+# in the memory of the Ruby program,
+# and the \REPL is implemented by repeatedly running <tt>alda play</tt> in command line.
 # Therefore, this class functions differently for \Alda 1 and \Alda 2
 # and you thus should not modify Alda::generation during an \REPL session.
+#
+# It is also possible to use this class as a Ruby wrapper of APIs of the \Alda nREPL server
+# in \Alda 2.
+# In this usage, you never need to call #run, and you call #message or #raw_message instead.
+#
+#   repl = Alda::REPL.new
+#   repl.message :eval_and_play, code: 'piano: c d e f' # => nil
+#   repl.message :eval_and_play, code: 'g a b > c' # => nil
+#   repl.message :score_text # => "piano: [c d e f]\ng a b > c\n"
+#   repl.message :eval_and_play, code: 'this will cause an error' # (raises Alda::NREPLServerError)
 class Alda::REPL
 	
 	##
@@ -76,8 +90,6 @@ class Alda::REPL
 	# in an instance of this class,
 	# so you can call the instance methods down here
 	# when you play with an \REPL.
-	#--
-	# TODO documents
 	class TempScore < ::Alda::Score
 		include Alda
 		
@@ -91,28 +103,63 @@ class Alda::REPL
 		#
 		# Creates a new TempScore for the given \REPL session specified by +session+.
 		# It is called in Alda::REPL::new.
-		#
-		#   $ alda-irb
-		#   > p get_binding.receiver == self
-		#   true
 		def initialize session
 			super()
 			@session = session
 		end
 		
 		##
+		# :call-seq:
+		#   to_s -> String
+		#
 		# Overrides Alda::Score#to_s.
 		# Returns the history.
 		#
 		#   $ alda-irb
-		#   >
+		#   > harmonica_; a b c
+		#   harmonica: [a b c]
+		#   > guitar_; c g e
+		#   guitar: [c g e]
+		#   > p to_s
+		#   "harmonica: [a b c]\nguitar: [c g e]\n"
 		def to_s
 			@session.history
 		end
 		
 		##
+		# :call-seq:
+		#   clear_history() -> nil
+		#
 		# Clears all the modifications that have been made to the score
 		# and start a new one.
+		# See #score for an example.
+		def clear_history
+			@session.clear_history
+		end
+		alias new clear_history
+		alias new_score clear_history
+		
+		##
+		# :call-seq:
+		#   get_binding() -> Binding
+		#
+		# Returns a Binding for the instance eval local environment of this score.
+		# Different callings of this method will return different bindings,
+		# and they do not share local variables.
+		# This method is called in Alda::REPL::new.
+		#
+		#   $ alda-irb
+		#   > p get_binding.receiver == self
+		#   true
+		def get_binding
+			binding
+		end
+		
+		##
+		# :call-seq:
+		#   score() -> nil
+		#
+		# Print the history (all \Alda code of the score).
 		#
 		#   $ alda-irb
 		#   > violin_; a b
@@ -121,38 +168,40 @@ class Alda::REPL
 		#   violin: [a b]
 		#   > clear_history
 		#   > score
-		#
 		#   > viola_; c
 		#   viola: c
 		#   > score
 		#   viola: c
-		def clear_history
-			@session.clear_history
-		end
-		alias new clear_history
-		alias new_score clear_history
-		
-		##
-		# Returns a Binding for the instance eval local environment of this score.
-		# Different callings of this method will return different bindings,
-		# and they do not share local variables.
-		# This method is called in Alda::REPL::new.
-		def get_binding
-			binding
-		end
-		
 		def score
 			print @session.color ? @session.history.blue : @session.history
 			nil
 		end
 		alias score_text score
 		
+		##
+		# :call-seq:
+		#   map() -> nil
+		#
+		# Prints a data representation of the score.
+		# This is the output that you get when you call Alda::Score#parse.
 		def map
 			json = Alda.v1? ? parse : @session.message(:score_data)
 			json = JSON.generate JSON.parse(json), indent: '  ', space: ' ', object_nl: ?\n, array_nl: ?\n
 			puts @session.color ? json.blue : json
 		end
 		alias score_data map
+		
+		##
+		# :call-seq:
+		#   score_events() -> nil
+		#
+		# Prints the parsed events output of the score.
+		# This is the output that you get when you call Alda::Score#parse with <tt>output: :events</tt>.
+		def score_events
+			json = Alda.v1? ? parse(output: :events) : @session.message(:score_events)
+			json = JSON.generate JSON.parse(json), indent: '  ', space: ' ', object_nl: ?\n, array_nl: ?\n
+			puts @session.color ? json.blue : json
+		end
 		
 		alias quit exit
 	end
@@ -201,8 +250,13 @@ class Alda::REPL
 	end
 	
 	##
-	#--
-	# TODO docs
+	# :call-seq:
+	#   setup_repl(opts) -> nil
+	#
+	# Sets up the \REPL session.
+	# This method is called in ::new.
+	# After you #terminate the session,
+	# you cannot use the \REPL anymore unless you call this method again.
 	def setup_repl opts
 		if Alda.v1?
 			@history = StringIO.new
@@ -221,11 +275,18 @@ class Alda::REPL
 			@socket = TCPSocket.new @host, @port
 			@bencode_parser = BEncode::Parser.new @socket
 		end
+		nil
 	end
 	
 	##
-	#--
-	# TODO docs
+	# :call-seq:
+	#   raw_message(contents) -> Hash
+	#
+	# Sends a message to the nREPL server and returns the response.
+	# The parameter +contents+ is a Hash or a JSON string.
+	#
+	#   repl = Alda::REPL.new
+	#   repl.raw_message op: 'describe' # => {"ops"=>...}
 	def raw_message contents
 		Alda::GenerationError.assert_generation [:v2]
 		contents = JSON.parse contents if contents.is_a? String
@@ -233,6 +294,23 @@ class Alda::REPL
 		@bencode_parser.parse!
 	end
 	
+	##
+	# :call-seq:
+	#   message(op, **params) -> String or Hash
+	#
+	# Sends a message to the nREPL server with the following format,
+	# with +op+ being the operation name (the +op+ field in the message),
+	# and +params+ being the parameters (other fields in the message).
+	# Then, this method analyzes the response.
+	# If there is an error, raises Alda::NREPLServerError.
+	# Otherwise, if the response contains only one field, return the content of that field (a String).
+	# Otherwise, return the whole response as a Hash.
+	#
+	#   repl = Alda::REPL.new
+	#   repl.message :eval_and_play, code: 'piano: c d e f' # => nil
+	#   repl.message :eval_and_play, code: 'g a b > c' # => nil
+	#   repl.message :score_text # => "piano: [c d e f]\ng a b > c\n"
+	#   repl.message :eval_and_play, code: 'this will cause an error' # (raises Alda::NREPLServerError)
 	def message op, **params
 		result = raw_message op: Alda::Utils.snake_to_slug(op), **params
 		result.transform_keys! { Alda::Utils.slug_to_snake _1 }
@@ -251,7 +329,7 @@ class Alda::REPL
 	#   run() -> nil
 	#
 	# Runs the session.
-	# Includes the start, the main loop, and the termination.
+	# Includes the start (#start), the main loop, and the termination (#terminate).
 	def run
 		start
 		while code = rb_code
@@ -289,8 +367,14 @@ class Alda::REPL
 	end
 	
 	##
-	#--
-	# TODO docs
+	# :call-seq:
+	#   readline(indent = 0) -> String
+	#
+	# Prompts the user to input a line.
+	# The parameter +indent+ is the indentation level.
+	# Twice the number of spaces is already in the input field before the user fills in.
+	# The prompt hint is different for zero +indent+ and nonzero +indent+.
+	# Returns the user input.
 	def readline indent = 0
 		prompt = indent.nonzero? ? '. ' : '> '
 		prompt = prompt.green if @color

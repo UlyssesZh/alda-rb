@@ -287,13 +287,13 @@ class Alda::Score
 	
 	##
 	# :call-seq:
-	#   load(filename) -> Alda::InlineLisp
+	#   load(filename) -> Alda::Raw
 	#
 	# Loads alda codes from a file.
 	#
-	# Actually appends a Alda::InlineLisp event of +alda-code+ lisp call.
+	# Actually appends a Alda::Raw event with the contents in the file +filename+.
 	def load filename
-		event = Alda::InlineLisp.new :alda_code, File.read(filename)
+		event = Alda::Raw.new File.read filename
 		@events.push event
 		event
 	end
