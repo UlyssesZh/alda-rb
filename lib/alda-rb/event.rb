@@ -427,7 +427,7 @@ class Alda::InlineLisp < Alda::Event
 	# The underlines "_" in +head+ will be converted to hyphens "-".
 	def initialize head, *args
 		super()
-		@head = head.to_s.gsub ?_, ?-
+		@head = Alda::Utils.snake_to_slug head
 		@args = args
 	end
 	
@@ -827,7 +827,7 @@ class Alda::Part < Alda::Event
 	# Creates an Alda::Part.
 	def initialize names, arg = nil
 		super()
-		@names = names.map { |name| name.to_s.tr ?_, ?- }
+		@names = names.map { Alda::Utils.snake_to_slug _1 }
 		@arg = arg
 	end
 	
@@ -995,7 +995,7 @@ class Alda::Marker < Alda::Event
 	# Underlines in +name+ is converted to hyphens.
 	def initialize name
 		super()
-		@name = name.to_s.tr ?_, ?-
+		@name = Alda::Utils.snake_to_slug name
 	end
 	
 	##
@@ -1038,7 +1038,7 @@ class Alda::AtMarker < Alda::Event
 	# Underlines "_" in +name+ is converted to hyphens "-".
 	def initialize name
 		super()
-		@name = name.to_s.tr ?_, ?-
+		@name = Alda::Utils.snake_to_slug name
 	end
 	
 	##
@@ -1266,7 +1266,7 @@ class Alda::LispIdentifier < Alda::Event
 	# Underlines "_" in +name+ is converted to hyphens "-".
 	def initialize name
 		super()
-		@name = name.tr ?_, ?-
+		@name = Alda::Utils.snake_to_slug name
 	end
 	
 	##

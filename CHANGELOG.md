@@ -15,6 +15,7 @@ Specifically, one of the values in the array Alda::GENERATIONS.
 - In Alda::Chord#to_alda_code, considering an undocumented breaking change about chords,
 the behavior is slightly different for \Alda 1 and \Alda 2.
 - Added Thread#inside_alda_list.
+- Added Alda::REPL#message and Alda::REPL#raw_message.
 
 APIs that are modified to support \Alda 2:
 
@@ -32,6 +33,8 @@ Documents that modified for notice about \Alda 2:
 - Alda::EventList#method_missing.
 - Alda::InlineLisp.
 - Array#to_alda_code, Hash#to_alda_code.
+- Alda::REPL.
+- Alda::CommandLineError#port.
 
 Examples that are modified to work in \Alda 2:
 
@@ -49,16 +52,30 @@ See Alda::EventContainer#check_in_chord, Alda::EventList#method_missing.
 classes of parents that will be detached from.
 - (Potentially BREAKING) Alda::Event#detach_from_parent now tries to detach the topmost container
 instead of the event itself from the parent.
+- Added a commandline program called `alda-irb`. See Alda::REPL.
+- Traceback of exception will also be printed now if an Interrupt is caught in \REPL.
+- <kbd>Ctrl</kbd>+<kbd>C</kbd> can now be used to discard the current input in \REPL.
+- Now, Alda::REPL takes better care of indents.
+- Added no-color mode and no-preview mode for \REPL.
+- Now Alda::REPL::TempScore#score and Alda::REPL::TempScore#map output in blue color.
 
 New APIs:
 
 - Added Alda::Raw.
-- Added Alda::Utils::warn.
+- Added Alda::Utils::warn, Alda::Utils::win_platform?,
+Alda::Utils::snake_to_slug, Alda::Utils::slug_to_snake.
 - Added Alda::Event#is_event_of?. It is overridden in Alda::EventContainer#is_event_of?.
 - Added Alda::Event#== and Alda::EventList#==. It is overridden in many subclasses.
 - Added Alda::EventContainer#check_in_chord.
 - Added Alda::EventList#l.
 - Added Alda::EventList#raw.
+- Added Alda::REPL#color, Alda::REPL#preview.
+- Added Alda::REPL#setup_repl, Alda::REPL#readline.
+- Added Alda::REPL::TempScore#new_score, Alda::REPL::TempScore#score_text, Alda::REPL::TempScore#score_data.
+- Added Alda::pipe.
+- Added Alda::processes.
+- Added Alda::NREPLServerError.
+- Added Alda::GenerationError::assert_generation.
 
 Slightly improved docs:
 
@@ -71,6 +88,7 @@ Slightly improved docs:
 - Alda::EventList::new.
 - Alda::OrderError::new.
 - Alda::InlineLisp.
+- Alda::OrderError#expected.
 
 Much better docs:
 
@@ -84,9 +102,18 @@ New examples:
 - track-volume,
 - variables-2.
 
-### BREAKING deletions
+### BREAKING changes
+
+Removed APIs:
 
 - Removed Alda::SetVariable#original_events.
+- Removed Alda::repl. Now calling `Alda.repl` will trigger commandline `alda repl`.
+For the old REPL function, use `Alda::REPL.new.run` instead.
+- Removed Alda::REPL::TempScore#history.
+
+Modified APIs or features:
+
+- Now Alda::REPL#play_score does not call Alda::REPL#try_command.
 
 ### Fixed bugs
 
@@ -94,6 +121,8 @@ New examples:
 because it is not updated in some cases.
 - Fixed (potentially BREAKING): Hash#to_alda_code returns `[[k1 v1] [k2 v2]]`.
 Now, it returns `{k1 v1 k2 v2}`.
+- Use reline instead of readline in Alda::REPL
+because Ruby 3.3 is dropping the shipment of readline-ext.
 
 ### Others
 

@@ -1,0 +1,29 @@
+#!/usr/bin/env ruby
+
+require 'alda-rb'
+require 'optparse'
+
+HELP = 'Print this help message and exit'.freeze
+HOST = 'The hostname of the Alda REPL server; only useful in Alda 2; see `alda repl --help`'.freeze
+PORT = 'The port of the Alda REPL server; only useful in Alda 2; see `alda repl --help`'.freeze
+NO_COLOR = 'Whether the output should not be colored'.freeze
+NO_PREVIEW = 'Whether a preview of what Alda code will not be played everytime you input ruby codes'.freeze
+
+host = 'localhost'
+port = -1
+color = true
+preview = true
+
+OptionParser.new do |opts|
+	opts.banner = 'Usage: alda-irb [options]'
+	opts.on('-h', '--help', HELP) { exit unless puts opts }
+	opts.on('-H', '--host string', HOST) { host = _1 }
+	opts.on('-p', '--port int', PORT) { port = _1 }
+	opts.on('-c', '--no-color', NO_COLOR) { color = false }
+	opts.on('-P', '--no-preview', NO_PREVIEW) { preview = false }
+end.parse!
+
+Alda.deduce_generation
+opts = {color: color, preview: preview}
+opts.merge! host: host, port: port unless Alda.v1?
+Alda::REPL.new(**opts).run

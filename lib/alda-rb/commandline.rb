@@ -89,23 +89,8 @@ module Alda
 	
 	COMMANDS.each do |command, generations|
 		define_method command do |*args, **opts|
-			raise GenerationError.new generations unless generations.include? generation
-			block = ->key, val do
-				next unless val
-				args.push "--#{key.to_s.tr ?_, ?-}"
-				args.push val.to_s unless val == true
-			end
-			# executable
-			args.unshift Alda.executable
-			args.map! &:to_s
-			# options
-			Alda.options.each &block
-			# subcommand
-			args.push command.to_s
-			# subcommand options
-			opts.each &block
-			# subprocess
-			IO.popen(args, &:read).tap { raise CommandLineError.new $?, _1 if $?.exitstatus.nonzero? }
+			Alda::GenerationError.assert_generation generations
+			Alda.pipe(command, *args, **opts, &:read).tap { raise CommandLineError.new $?, _1 if $?.exitstatus.nonzero? }
 		end.tap { module_function _1 }
 	end
 	
@@ -170,6 +155,45 @@ module Alda
 	@executable = 'alda'
 	@options = {}
 	v2!
+	module_function
+	
+	##
+	#--
+	# TODO docs
+	def pipe command, *args, **opts, &block
+		add_option = ->key, val do
+			next unless val
+			args.push "--#{Alda::Utils.snake_to_slug key}"
+			args.push val.to_s unless val == true
+		end
+		# executable
+		args.unshift Alda.executable
+		args.map! &:to_s
+		# options
+		Alda.options.each &add_option
+		# subcommand
+		args.push command.to_s
+		# subcommand options
+		opts.each &add_option
+		# subprocess
+		spawn_options = Alda::Utils.win_platform? ? {new_pgroup: true} : {pgroup: true}
+		IO.popen args, **spawn_options, &block
+	end
+	
+	##
+	#--
+	# TODO docs
+	def processes
+		raise GenerationError.new [:v2] if v1?
+		Alda.ps.lines(chomp: true)[1..].map do |line|
+			id, port, state, expiry, type = line.split ?\t
+			port = port.to_i
+			state = state == ?- ? nil : state.to_sym
+			expiry = nil if expiry == ?-
+			type = Alda::Utils.slug_to_snake type
+			{id: id, port: port, state: state, expiry: expiry, type: type}
+		end
+	end
 	
 	##
 	# :call-seq:
@@ -178,7 +202,7 @@ module Alda
 	# Whether the alda server is up.
 	# Always returns true if ::generation is +:v2+.
 	def up?
-		v2? || status.include?('up')
+		Alda.v2? || Alda.status.include?('up')
 	end
 	
 	##
@@ -188,7 +212,7 @@ module Alda
 	# Whether the alda server is down.
 	# Always returns false if ::generation is +:v2+.
 	def down?
-		!v2? && status.include?('down')
+		!Alda.v2? && Alda.status.include?('down')
 	end
 	
 	##
@@ -198,10 +222,8 @@ module Alda
 	# Deduce the generation of \Alda being used by running <tt>alda version</tt> in command line,
 	# and then set ::generation accordingly.
 	def deduce_generation
-		/(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)/ =~ version
+		/(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)/ =~ Alda.version
 		@generation = major == '1' ? :v1 : :v2
 	end
-	
-	module_function :up?, :down?, :deduce_generation
 	
 end

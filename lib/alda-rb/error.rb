@@ -9,30 +9,67 @@ class Alda::CommandLineError < StandardError
 	
 	##
 	# The port on which the problematic alda server runs.
+	# This is only available for \Alda 1.
 	#
 	#   begin
 	#     Alda[port: 1108].play code: 'y'
 	#   rescue CommandLineError => e
 	#     e.port # => 1108
 	#   end
-	attr_reader :port
+	def port
+		Alda::GenerationError.assert_generation [:v1]
+		@port
+	end
 	
 	##
 	# :call-seq:
 	#   new(status, msg=nil) -> Alda::CommandLineError
 	#
 	# Create a Alda::CommandLineError object.
-	# +status+ is the status of the process running +alda+ command.
-	# +msg+ is output of +alda+ command. port# info is extracted from +msg+.
+	# +status+ is the status of the process running +alda+ command (can be nil).
+	# +msg+ is the output of +alda+ command. #port info is extracted from +msg+ in \Alda 1.
 	def initialize status, msg = nil
-		if match = msg&.match(/^\[(?<port>\d+)\]\sERROR\s(?<message>.*)$/)
-			super match[:message]
-			@port = match[:port].to_i
+		if Alda.v1? && msg && /^\[(?<port>\d+)\]\sERROR\s(?<message>.*)$/ =~ msg
+			super message
+			@port = port.to_i
 		else
 			super msg
-			@port = nil
 		end
 		@status = status
+	end
+end
+
+##
+# The error is raised when the \Alda nREPL server returns problems.
+# This is only available for \Alda 2.
+# See Alda::REPL#message.
+class Alda::NREPLServerError < StandardError
+	
+	##
+	# The hostname of the nREPL server.
+	attr_reader :host
+	
+	##
+	# The port of the nREPL server.
+	attr_reader :port
+	
+	##
+	# The problems returned by the nREPL server.
+	# This is an Array of String.
+	attr_reader :problems
+	
+	##
+	# :call-seq:
+	#   new(host, port, problems) -> Alda::NREPLServerError
+	#
+	# Creates a Alda::NREPLServerError object.
+	# Raises Alda::GenerationError if the current generation is not \Alda 2.
+	def initialize host, port, problems
+		Alda::GenerationError.assert_generation [:v2]
+		super problems.join ?\n
+		@host = host
+		@port = port
+		@problems = problems
 	end
 end
 
@@ -63,6 +100,12 @@ class Alda::GenerationError < StandardError
 		@generation = Alda.generation
 		@fine_generations = fine_generations
 	end
+	
+	##
+	# Raises an Alda::GenerationError if the current generation is not in +fine_generations+.
+	def self.assert_generation fine_generations
+		raise new fine_generations unless fine_generations.include? Alda.generation
+	end
 end
 
 ##
@@ -78,8 +121,7 @@ class Alda::OrderError < StandardError
 	
 	##
 	# The expected element gotten if it is of the correct order.
-	#
-	# See #got
+	# See #got.
 	#
 	#   Alda::Score.new do
 	#     motif = f4 f e e d d c2
