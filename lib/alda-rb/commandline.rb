@@ -114,7 +114,9 @@ module Alda
 		##
 		# The commandline environment variables used when running +alda+ on command line.
 		# A Hash.
-		# It is <tt>{"ALDA_DISABLE_SPAWNING"=>"yes","ALDA_DISABLE_TELEMETRY"=>"yes"}</tt> by default.
+		# It is <tt>{"ALDA_DISABLE_SPAWNING"=>"yes","ALDA_DISABLE_TELEMETRY"=>"yes"}</tt> by default
+		# (for speeding up the command line responses:
+		# {alda-lang/alda#368}[https://github.com/alda-lang/alda/issues/368]).
 		attr_reader :env
 		
 		##

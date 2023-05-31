@@ -365,7 +365,7 @@ end
 #   end
 #
 # You can operate a score by purely using inline lisp events.
-# The following example only works in Alda 1 due to breaking changes in Alda 2
+# The following example only works in \Alda 1 due to breaking changes in \Alda 2
 # ({alda-lang/alda#483}[https://github.com/alda-lang/alda/issues/483],
 # {alda-lang/alda#484}[https://github.com/alda-lang/alda/issues/484]).
 #

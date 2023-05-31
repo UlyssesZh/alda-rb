@@ -264,7 +264,7 @@ class Alda::REPL
 		else
 			@port = (opts.fetch :port, -1).to_i
 			@host = opts.fetch :host, 'localhost'
-			unless @port.positive? && %w[localhost 127.0.0.1].include?(opts[:host]) &&
+			unless @port.positive? && %w[localhost 127.0.0.1].include?(@host) &&
 			       Alda.processes.any? { _1[:port] == @port && _1[:type] == :repl_server }
 				@nrepl_pipe = Alda.pipe :repl, **opts, server: true
 				/nrepl:\/\/[a-zA-Z0-9._\-]+:(?<port>\d+)/ =~ @nrepl_pipe.gets

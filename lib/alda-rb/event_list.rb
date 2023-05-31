@@ -152,8 +152,8 @@ module Alda::EventList
 	#
 	# Append the events of another Alda::EventList object here.
 	# This method covers the disadvantage of alda's being unable to
-	# import scores from other files.
-	# See https://github.com/alda-lang/alda-core/issues/8.
+	# import scores from other files
+	# ({alda-lang/alda-core#8}[https://github.com/alda-lang/alda-core/issues/8]).
 	def import event_list
 		@events.concat event_list.events
 		nil
