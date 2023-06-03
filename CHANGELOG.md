@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## v0.3.1 (not released)
+## v0.3.1 (2023-06-03)
 
 New features and new API:
 
