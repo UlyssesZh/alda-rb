@@ -223,6 +223,11 @@ class Alda::REPL
 	attr_accessor :preview
 	
 	##
+	# Whether to use Reline for input.
+	# When it is false, the \REPL session will be less buggy but less powerful.
+	attr_accessor :reline
+	
+	##
 	# :call-seq:
 	#   new(**opts) -> Alda::REPL
 	#
@@ -230,6 +235,7 @@ class Alda::REPL
 	# The parameter +color+ specifies whether the output should be colored (sets #color).
 	# The parameter +preview+ specifies whether a preview of what \Alda code will be played
 	# everytime you input ruby codes (sets #preview).
+	# The parameter +reline+ specifies whether to use Reline for input.
 	#
 	# The +opts+ are passed to the command line of <tt>alda repl</tt>.
 	# Available options are +host+, +port+, etc.
@@ -240,13 +246,14 @@ class Alda::REPL
 	# A new one will be started only if no existing server is found.
 	#
 	# The +opts+ are ignored in \Alda 1.
-	def initialize color: true, preview: true, **opts
+	def initialize color: true, preview: true, reline: true, **opts
 		@score = TempScore.new self
 		@binding = @score.get_binding
 		# IRB once changed the API of RubyLex#initialize. Take care of that.
 		@lex = RubyLex.new *(RubyLex.instance_method(:initialize).arity == 0 ? [] : [@binding])
 		@color = color
 		@preview = preview
+		@reline = reline
 		setup_repl opts
 	end
 	
@@ -266,7 +273,7 @@ class Alda::REPL
 			@host = opts.fetch :host, 'localhost'
 			unless @port.positive? && %w[localhost 127.0.0.1].include?(@host) &&
 			       Alda.processes.any? { _1[:port] == @port && _1[:type] == :repl_server }
-				@nrepl_pipe = Alda.pipe :repl, **opts, server: true
+				Alda.env(ALDA_DISABLE_SPAWNING: :no) { @nrepl_pipe = Alda.pipe :repl, **opts, server: true }
 				/nrepl:\/\/[a-zA-Z0-9._\-]+:(?<port>\d+)/ =~ @nrepl_pipe.gets
 				@port = port.to_i
 				Process.detach @nrepl_pipe.pid
@@ -373,18 +380,25 @@ class Alda::REPL
 	#
 	# Prompts the user to input a line.
 	# The parameter +indent+ is the indentation level.
-	# Twice the number of spaces is already in the input field before the user fills in.
+	# Twice the number of spaces is already in the input field before the user fills in
+	# if #reline is true.
 	# The prompt hint is different for zero +indent+ and nonzero +indent+.
 	# Returns the user input.
 	def readline indent = 0
 		prompt = indent.nonzero? ? '. ' : '> '
 		prompt = prompt.green if @color
-		Reline.pre_input_hook = -> do
-			Reline.insert_text '  ' * indent
-			Reline.redisplay
-			Reline.pre_input_hook = nil
+		if @reline
+			Reline.pre_input_hook = -> do
+				Reline.insert_text '  ' * indent
+				Reline.redisplay
+				Reline.pre_input_hook = nil
+			end
+			Reline.readline prompt, true
+		else
+			$stdout.print prompt
+			$stdout.flush
+			$stdin.gets chomp: true
 		end
-		Reline.readline prompt, true
 	end
 	
 	##

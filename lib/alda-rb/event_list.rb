@@ -239,7 +239,7 @@ class Alda::Score
 	#   Alda::Score.new { piano_; c; d; e }.play from: 1
 	#   # (plays only an E note)
 	def play **opts
-		Alda.play code: self, **opts
+		Alda.env(ALDA_DISABLE_SPAWNING: :no) { Alda.play code: self, **opts }
 	end
 	
 	##

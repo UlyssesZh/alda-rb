@@ -112,14 +112,6 @@ module Alda
 		attr_reader :options
 		
 		##
-		# The commandline environment variables used when running +alda+ on command line.
-		# A Hash.
-		# It is <tt>{"ALDA_DISABLE_SPAWNING"=>"yes","ALDA_DISABLE_TELEMETRY"=>"yes"}</tt> by default
-		# (for speeding up the command line responses:
-		# {alda-lang/alda#368}[https://github.com/alda-lang/alda/issues/368]).
-		attr_reader :env
-		
-		##
 		# The major version of the +alda+ command used.
 		# Possible values: +:v1+ or +:v2+ (i.e. one of the values in Alda::GENERATIONS).
 		# If you try to specify it to values other than those, an ArgumentError will be raised.
@@ -169,6 +161,37 @@ module Alda
 		'ALDA_DISABLE_TELEMETRY' => 'yes'
 	}
 	v2!
+	
+	##
+	# :call-seq:
+	#   env() -> Hash
+	#   env(hash) -> Hash
+	#   env(hash) { ... } -> Object
+	#
+	# When called with no arguments,
+	# returns the commandline environment variables (a Hash)
+	# used when running +alda+ on command line.
+	# It is <tt>{"ALDA_DISABLE_SPAWNING"=>"yes","ALDA_DISABLE_TELEMETRY"=>"yes"}</tt> by default
+	# (for speeding up the command line responses:
+	# {alda-lang/alda#368}[https://github.com/alda-lang/alda/issues/368]).
+	#
+	# When called with an argument +hash+,
+	# merge the old environment variables with +hash+ and set
+	# the merged Hash as the new environment variables.
+	# Returns the new environment variables (a Hash).
+	#
+	# When called with an argument +hash+ and a block,
+	# execute the block with the environment being set to the merge of the old environment
+	# and +hash+, and then restore the old environment.
+	# Returns the returned value of the block.
+	def env hash = nil, &block
+		if hash
+			@env = (old_env = @env).merge hash.map { |k, v| [k.to_s, v.to_s] }.to_h
+			block ? block.().tap { @env = old_env } : @env
+		else
+			@env
+		end
+	end
 	
 	##
 	# :call-seq:
@@ -228,9 +251,9 @@ module Alda
 	#   up?() -> true or false
 	#
 	# Whether the alda server is up.
-	# Always returns true if ::generation is +:v2+.
+	# Checks whether there are any play processes in ::processes in \Alda 2.
 	def up?
-		Alda.v2? || Alda.status.include?('up')
+		Alda.v1? ? Alda.status.include?('up') : Alda.processes.any? { _1[:type] == :player }
 	end
 	
 	##
@@ -238,9 +261,9 @@ module Alda
 	#   down? -> true or false
 	#
 	# Whether the alda server is down.
-	# Always returns false if ::generation is +:v2+.
+	# Checks whether there are no play processes in ::processes in \Alda 2.
 	def down?
-		!Alda.v2? && Alda.status.include?('down')
+		Alda.v1? ? Alda.status.include?('down') : Alda.processes.none? { _1[:type] == :player }
 	end
 	
 	##
@@ -254,6 +277,6 @@ module Alda
 		@generation = major == '1' ? :v1 : :v2
 	end
 	
-	module_function :pipe, :processes, :up?, :down?, :deduce_generation
+	module_function :env, :pipe, :processes, :up?, :down?, :deduce_generation
 	
 end
