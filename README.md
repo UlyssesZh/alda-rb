@@ -29,7 +29,6 @@ and try the following Ruby codes yourself:
 ```ruby
 require 'alda-rb'
 
-Alda.up if Alda.down?
 puts Alda.version
 
 score = Alda::Score.new { o4; c4/e/g; -d8; r8_16; +f4; o5; c2 }
