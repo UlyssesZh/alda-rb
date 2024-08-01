@@ -1,0 +1,44 @@
+name: Generate documentation
+
+on: [push]
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.3.0
+      - name: Install dependencies
+        run: |
+          gem install bundler
+          bundle install
+      - name: Generate documentation
+        run: bundle exec rake rdoc
+      - name: Upload documentation
+        uses: actions/upload-artifact@v4
+        with:
+          name: doc
+          path: doc
+  push:
+    permissions: write-all
+    runs-on: ubuntu-latest
+    name: Push documentation
+    needs: generate
+    steps:
+      - uses: actions/download-artifact@v4
+        name: Download documentation
+        with:
+          pattern: doc
+          path: doc
+          merge-multiple: true
+      - name: Push documentation
+        uses: crazy-max/ghaction-github-pages@v3
+        with:
+          target_branch: doc
+          build_dir: doc
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
