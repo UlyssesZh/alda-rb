@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+
+<title>module Alda::Utils - RDoc Documentation</title>
+
+<script type="text/javascript">
+  var rdoc_rel_prefix = "../";
+  var index_rel_prefix = "../";
+</script>
+
+<script src="../js/navigation.js" defer></script>
+<script src="../js/search.js" defer></script>
+<script src="../js/search_index.js" defer></script>
+<script src="../js/searcher.js" defer></script>
+<script src="../js/darkfish.js" defer></script>
+
+<link href="../css/fonts.css" rel="stylesheet">
+<link href="../css/rdoc.css" rel="stylesheet">
+
+
+<body id="top" role="document" class="module">
+<nav role="navigation">
+  <div id="project-navigation">
+    <div id="home-section" role="region" title="Quick navigation" class="nav-section">
+  <h2>
+    <a href="../index.html" rel="home">Home</a>
+  </h2>
+
+  <div id="table-of-contents-navigation">
+    <a href="../table_of_contents.html#pages">Pages</a>
+    <a href="../table_of_contents.html#classes">Classes</a>
+    <a href="../table_of_contents.html#methods">Methods</a>
+  </div>
+</div>
+
+    <div id="search-section" role="search" class="project-section initially-hidden">
+  <form action="#" method="get" accept-charset="utf-8">
+    <div id="search-field-wrapper">
+      <input id="search-field" role="combobox" aria-label="Search"
+             aria-autocomplete="list" aria-controls="search-results"
+             type="text" name="search" placeholder="Search (/) for a class, method, ..." spellcheck="false"
+             title="Type to search, Up and Down to navigate, Enter to load">
+    </div>
+
+    <ul id="search-results" aria-label="Search Results"
+        aria-busy="false" aria-expanded="false"
+        aria-atomic="false" class="initially-hidden"></ul>
+  </form>
+</div>
+
+  </div>
+
+  
+
+  <div id="class-metadata">
+    
+    
+    
+    
+    
+<!-- Method Quickref -->
+<div id="method-list-section" class="nav-section">
+  <h3>Methods</h3>
+
+  <ul class="link-list" role="directory">
+    <li ><a href="#method-c-slug_to_snake">::slug_to_snake</a>
+    <li ><a href="#method-c-snake_to_slug">::snake_to_slug</a>
+    <li ><a href="#method-c-warn">::warn</a>
+    <li ><a href="#method-c-win_platform-3F">::win_platform?</a>
+  </ul>
+</div>
+
+  </div>
+</nav>
+
+<main role="main" aria-labelledby="module-Alda::Utils">
+  <h1 id="module-Alda::Utils" class="module">
+    module Alda::Utils
+  </h1>
+
+  <section class="description">
+    
+<p>Some useful functions.</p>
+
+  </section>
+
+  <section id="5Buntitled-5D" class="documentation-section">
+
+
+
+
+
+     <section id="public-class-5Buntitled-5D-method-details" class="method-section">
+       <header>
+         <h3>Public Class Methods</h3>
+       </header>
+
+      <div id="method-c-slug_to_snake" class="method-detail ">
+        <div class="method-header">
+          <div class="method-heading">
+            <span class="method-callseq">
+              slug_to_snake(str) &rarr; Symbol
+            </span>
+            <span class="method-click-advice">click to toggle source</span>
+          </div>
+        </div>
+
+        <div class="method-description">
+          <p>Converts a slug-case <a href="../String.html"><code>String</code></a> to a snake_case <a href="../Symbol.html"><code>Symbol</code></a>. The inverse of <a href="Utils.html#method-c-snake_to_slug"><code>::snake_to_slug</code></a>.</p>
+
+          <div class="method-source-code" id="slug_to_snake-source">
+            <pre><span class="ruby-comment"># File lib/alda-rb/utils.rb, line 42</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">slug_to_snake</span> <span class="ruby-identifier">str</span>
+  <span class="ruby-identifier">str</span>.<span class="ruby-identifier">to_s</span>.<span class="ruby-identifier">gsub</span>(<span class="ruby-value">?-</span>, <span class="ruby-value">?_</span>).<span class="ruby-identifier">to_sym</span>
+<span class="ruby-keyword">end</span></pre>
+          </div>
+        </div>
+
+
+      </div>
+
+      <div id="method-c-snake_to_slug" class="method-detail ">
+        <div class="method-header">
+          <div class="method-heading">
+            <span class="method-callseq">
+              snake_to_slug(sym) &rarr; String
+            </span>
+            <span class="method-click-advice">click to toggle source</span>
+          </div>
+        </div>
+
+        <div class="method-description">
+          <p>Converts a snake_case <a href="../Symbol.html"><code>Symbol</code></a> to a slug-case <a href="../String.html"><code>String</code></a>. The inverse of <a href="Utils.html#method-c-slug_to_snake"><code>::slug_to_snake</code></a>.</p>
+
+          <div class="method-source-code" id="snake_to_slug-source">
+            <pre><span class="ruby-comment"># File lib/alda-rb/utils.rb, line 32</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">snake_to_slug</span> <span class="ruby-identifier">sym</span>
+  <span class="ruby-identifier">sym</span>.<span class="ruby-identifier">to_s</span>.<span class="ruby-identifier">gsub</span> <span class="ruby-value">?_</span>, <span class="ruby-value">?-</span>
+<span class="ruby-keyword">end</span></pre>
+          </div>
+        </div>
+
+
+      </div>
+
+      <div id="method-c-warn" class="method-detail ">
+        <div class="method-header">
+          <div class="method-heading">
+            <span class="method-callseq">
+              warn(message) &rarr; nil
+            </span>
+            <span class="method-click-advice">click to toggle source</span>
+          </div>
+        </div>
+
+        <div class="method-description">
+          <p>Prints a warning message to standard error, appended by a newline. The message is prefixed with the filename and lineno of the caller (the lowest level where the file is not an alda-rb source file).</p>
+
+          <div class="method-source-code" id="warn-source">
+            <pre><span class="ruby-comment"># File lib/alda-rb/utils.rb, line 12</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">warn</span> <span class="ruby-identifier">message</span>
+  <span class="ruby-identifier">location</span> = <span class="ruby-identifier">caller_locations</span>.<span class="ruby-identifier">find</span> { <span class="ruby-operator">!</span><span class="ruby-identifier">_1</span>.<span class="ruby-identifier">path</span>.<span class="ruby-identifier">start_with?</span> <span class="ruby-identifier">__dir__</span> }
+  <span class="ruby-constant">Warning</span>.<span class="ruby-identifier">warn</span> <span class="ruby-node">&quot;#{location.path}:#{location.lineno}: #{message}\n&quot;</span>
+<span class="ruby-keyword">end</span></pre>
+          </div>
+        </div>
+
+
+      </div>
+
+      <div id="method-c-win_platform-3F" class="method-detail ">
+        <div class="method-header">
+          <div class="method-heading">
+            <span class="method-callseq">
+              win_platform? &rarr; true or false
+            </span>
+            <span class="method-click-advice">click to toggle source</span>
+          </div>
+        </div>
+
+        <div class="method-description">
+          <p>Returns whether the current platform is Windows.</p>
+
+          <div class="method-source-code" id="win_platform-3F-source">
+            <pre><span class="ruby-comment"># File lib/alda-rb/utils.rb, line 22</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">win_platform?</span>
+  <span class="ruby-constant">Gem</span>.<span class="ruby-identifier">win_platform?</span>
+<span class="ruby-keyword">end</span></pre>
+          </div>
+        </div>
+
+
+      </div>
+
+    </section>
+
+  </section>
+</main>
+
+
+<footer id="validator-badges" role="contentinfo">
+  <p><a href="https://validator.w3.org/check/referer">Validate</a>
+  <p>Generated by <a href="https://ruby.github.io/rdoc/">RDoc</a> 6.7.0.
+  <p>Based on <a href="http://deveiate.org/projects/Darkfish-RDoc/">Darkfish</a> by <a href="http://deveiate.org">Michael Granger</a>.
+</footer>
+

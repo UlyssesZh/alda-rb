@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+
+<title>CHANGELOG - RDoc Documentation</title>
+
+<script type="text/javascript">
+  var rdoc_rel_prefix = "./";
+  var index_rel_prefix = "./";
+</script>
+
+<script src="./js/navigation.js" defer></script>
+<script src="./js/search.js" defer></script>
+<script src="./js/search_index.js" defer></script>
+<script src="./js/searcher.js" defer></script>
+<script src="./js/darkfish.js" defer></script>
+
+<link href="./css/fonts.css" rel="stylesheet">
+<link href="./css/rdoc.css" rel="stylesheet">
+
+
+<body id="top" role="document" class="file">
+<nav role="navigation">
+  <div id="project-navigation">
+    <div id="home-section" role="region" title="Quick navigation" class="nav-section">
+  <h2>
+    <a href="./index.html" rel="home">Home</a>
+  </h2>
+
+  <div id="table-of-contents-navigation">
+    <a href="./table_of_contents.html#pages">Pages</a>
+    <a href="./table_of_contents.html#classes">Classes</a>
+    <a href="./table_of_contents.html#methods">Methods</a>
+  </div>
+</div>
+
+    <div id="search-section" role="search" class="project-section initially-hidden">
+  <form action="#" method="get" accept-charset="utf-8">
+    <div id="search-field-wrapper">
+      <input id="search-field" role="combobox" aria-label="Search"
+             aria-autocomplete="list" aria-controls="search-results"
+             type="text" name="search" placeholder="Search (/) for a class, method, ..." spellcheck="false"
+             title="Type to search, Up and Down to navigate, Enter to load">
+    </div>
+
+    <ul id="search-results" aria-label="Search Results"
+        aria-busy="false" aria-expanded="false"
+        aria-atomic="false" class="initially-hidden"></ul>
+  </form>
+</div>
+
+  </div>
+
+  
+<div class="nav-section">
+  <h3>Table of Contents</h3>
+
+
+
+  <ul class="link-list" role="directory">
+              <li>
+            <details open>
+              <summary>      <a href="#label-CHANGELOG">CHANGELOG</a>
+</summary>
+              <ul class="link-list" role="directory">
+                          <li>      <a href="#label-v0.3.1+-282023-06-03-29">v0.3.1 (2023-06-03)</a>
+          <li>
+            <details open>
+              <summary>      <a href="#label-v0.3.0+-282023-05-29-29">v0.3.0 (2023-05-29)</a>
+</summary>
+              <ul class="link-list" role="directory">
+                          <li>      <a href="#label-Changes+for+Alda+2">Changes for Alda 2</a>
+          <li>      <a href="#label-New+things">New things</a>
+          <li>      <a href="#label-BREAKING+changes">BREAKING changes</a>
+          <li>      <a href="#label-Fixed+bugs">Fixed bugs</a>
+          <li>      <a href="#label-Others">Others</a>
+
+              </ul>
+            </details>
+          </li>
+          <li>      <a href="#label-v0.2.1+-282020-08-13-29">v0.2.1 (2020-08-13)</a>
+          <li>      <a href="#label-v0.2.0+-282020-05-08-29">v0.2.0 (2020-05-08)</a>
+          <li>      <a href="#label-v0.1.4+-282020-04-23-29">v0.1.4 (2020-04-23)</a>
+          <li>      <a href="#label-v0.1.2+-282020-04-16-29">v0.1.2 (2020-04-16)</a>
+          <li>      <a href="#label-v0.1.0+-282020-04-15-29">v0.1.0 (2020-04-15)</a>
+
+              </ul>
+            </details>
+          </li>
+
+  </ul>
+</div>
+
+
+  <div id="project-metadata">
+    
+<div id="fileindex-section" class="nav-section">
+  <h3>Pages</h3>
+
+  <ul class="link-list">
+    <li><a href="./CHANGELOG_md.html">CHANGELOG</a>
+    <li><a href="./CODE_OF_CONDUCT_md.html">CODE_OF_CONDUCT</a>
+    <li><a href="./LICENSE_txt.html">LICENSE</a>
+    <li><a href="./README_md.html">README</a>
+  </ul>
+</div>
+
+  </div>
+</nav>
+
+<main role="main" aria-label="Page CHANGELOG.md">
+
+<h1 id="label-CHANGELOG"><a href="CHANGELOG_md.html">CHANGELOG</a><span><a href="#label-CHANGELOG">&para;</a> <a href="#top">&uarr;</a></span></h1>
+
+<h2 id="label-v0.3.1+-282023-06-03-29">v0.3.1 (2023-06-03)<span><a href="#label-v0.3.1+-282023-06-03-29">&para;</a> <a href="#top">&uarr;</a></span></h2>
+
+<p>New features and new API:</p>
+<ul><li>
+<p>Added <a href="Alda/NREPLServerError.html#attribute-i-status"><code>Alda::NREPLServerError#status</code></a>.</p>
+</li><li>
+<p>Added <a href="Alda.html#method-c-env"><code>Alda::env</code></a>.</p>
+</li><li>
+<p><a href="Alda.html#method-c-down-3F"><code>Alda::down?</code></a> and <a href="Alda.html#method-c-up-3F"><code>Alda::up?</code></a> is now useful in Alda 2.</p>
+</li><li>
+<p>Added <a href="Alda/REPL.html#attribute-i-reline"><code>Alda::REPL#reline</code></a>.</p>
+</li></ul>
+
+<p>BREAKING changes of API:</p>
+<ul><li>
+<p>Now <code>status</code> should be specified as a parameter of <a href="Alda/NREPLServerError.html#method-c-new"><code>Alda::NREPLServerError::new</code></a>.</p>
+</li></ul>
+
+<p>Fixed bugs:</p>
+<ul><li>
+<p>Fixed: <code>alda-irb</code> does not run correctly in Ruby 3.</p>
+</li><li>
+<p>Fixed: cannot handle unknown-op error of nREPL server.</p>
+</li><li>
+<p>Fixed: an excess message printed when exiting REPL on Windows.</p>
+</li></ul>
+
+<p>Other changes:</p>
+<ul><li>
+<p>Fixed dependencies.</p>
+</li><li>
+<p>Fixed some changelog of 0.3.0.</p>
+</li><li>
+<p>Added a gem badge in <a href="README_md.html">README</a>.</p>
+</li><li>
+<p>Updated bundler version.</p>
+</li></ul>
+
+<h2 id="label-v0.3.0+-282023-05-29-29">v0.3.0 (2023-05-29)<span><a href="#label-v0.3.0+-282023-05-29-29">&para;</a> <a href="#top">&uarr;</a></span></h2>
+
+<h3 id="label-Changes+for+Alda+2">Changes for Alda 2<span><a href="#label-Changes+for+Alda+2">&para;</a> <a href="#top">&uarr;</a></span></h3>
+
+<p>Added API for support Alda 2 while still being able to support Alda 1:</p>
+<ul><li>
+<p>Added Alda::COMMANDS_FOR_VERSIONS and Alda::GENERATIONS.</p>
+</li><li>
+<p>Added <a href="Alda.html#attribute-c-generation"><code>Alda::generation</code></a>, which can be <code>:v1</code> or <code>:v2</code>. Specifically, one of the values in the array Alda::GENERATIONS.</p>
+</li><li>
+<p>Added Alda::v1?, Alda::v2?, Alda::v1!, Alda::v2! (See Alda::GENERATIONS).</p>
+</li><li>
+<p>Added <a href="Alda.html#method-c-deduce_generation"><code>Alda::deduce_generation</code></a>.</p>
+</li><li>
+<p>Added <a href="Alda/GenerationError.html"><code>Alda::GenerationError</code></a>.</p>
+</li><li>
+<p>In <a href="Alda/Chord.html#method-i-to_alda_code"><code>Alda::Chord#to_alda_code</code></a>, considering an undocumented breaking change about chords, the behavior is slightly different for Alda 1 and Alda 2.</p>
+</li><li>
+<p>Added <a href="Thread.html#attribute-i-inside_alda_list"><code>Thread#inside_alda_list</code></a>.</p>
+</li><li>
+<p>Added <a href="Alda/REPL.html#method-i-message"><code>Alda::REPL#message</code></a> and <a href="Alda/REPL.html#method-i-raw_message"><code>Alda::REPL#raw_message</code></a>.</p>
+</li></ul>
+
+<p>APIs that are modified to support Alda 2:</p>
+<ul><li>
+<p>(BREAKING CHANGE!) Changed Alda::COMMANDS from an array of symbols into a hash. The keys are the names of the commands, and the values are arrays of generations where the command is available.</p>
+</li><li>
+<p>Because Alda 2 does not have the notion of down and up, if we are in v2, <a href="Alda.html#method-c-down-3F"><code>Alda::down?</code></a> will always return false and <a href="Alda.html#method-c-up-3F"><code>Alda::up?</code></a> will always return true.</p>
+</li><li>
+<p><a href="Array.html#method-i-to_alda_code"><code>Array#to_alda_code</code></a> and <a href="Hash.html#method-i-to_alda_code"><code>Hash#to_alda_code</code></a> behaves differently for Alda 1 and Alda 2 regarding <a href="https://github.com/alda-lang/alda/blob/master/doc/alda-2-migration-guide.md#attribute-syntax-has-changed-in-some-cases">a breaking change</a>.</p>
+</li></ul>
+
+<p>Documents that modified for notice about Alda 2:</p>
+<ul><li>
+<p><a href="Alda.html#method-c-5B-5D"><code>Alda::[]</code></a>, <a href="Alda.html#method-c-up-3F"><code>Alda::up?</code></a>, <a href="Alda.html#method-c-down-3F"><code>Alda::down?</code></a>, Alda::COMMANDS.</p>
+</li><li>
+<p><a href="Alda/EventList.html#method-i-method_missing"><code>Alda::EventList#method_missing</code></a>.</p>
+</li><li>
+<p><a href="Alda/InlineLisp.html"><code>Alda::InlineLisp</code></a>.</p>
+</li><li>
+<p><a href="Array.html#method-i-to_alda_code"><code>Array#to_alda_code</code></a>, <a href="Hash.html#method-i-to_alda_code"><code>Hash#to_alda_code</code></a>.</p>
+</li><li>
+<p><a href="Alda/REPL.html"><code>Alda::REPL</code></a>.</p>
+</li><li>
+<p><a href="Alda/CommandLineError.html#method-i-port"><code>Alda::CommandLineError#port</code></a>.</p>
+</li></ul>
+
+<p>Examples that are modified to work in Alda 2:</p>
+<ul><li>
+<p>clapping_music,</p>
+</li><li>
+<p>dot_accessor,</p>
+</li><li>
+<p>marriage_d_amour.</p>
+</li></ul>
+
+<h3 id="label-New+things">New things<span><a href="#label-New+things">&para;</a> <a href="#top">&uarr;</a></span></h3>
+
+<p>New features:</p>
+<ul><li>
+<p>Added warnings about structures that probably trigger errors in Alda. See <a href="Alda/EventContainer.html#method-i-check_in_chord"><code>Alda::EventContainer#check_in_chord</code></a>, <a href="Alda/EventList.html#method-i-method_missing"><code>Alda::EventList#method_missing</code></a>.</p>
+</li><li>
+<p>Now you can specify a parameter in <a href="Alda/Event.html#method-i-detach_from_parent"><code>Alda::Event#detach_from_parent</code></a> to exclude some classes of parents that will be detached from.</p>
+</li><li>
+<p>(Potentially BREAKING) <a href="Alda/Event.html#method-i-detach_from_parent"><code>Alda::Event#detach_from_parent</code></a> now tries to detach the topmost container instead of the event itself from the parent.</p>
+</li><li>
+<p>Added a commandline program called <code>alda-irb</code>. See <a href="Alda/REPL.html"><code>Alda::REPL</code></a>.</p>
+</li><li>
+<p>Traceback of exception will also be printed now if an Interrupt is caught in REPL.</p>
+</li><li>
+<p>&lt;kbd&gt;Ctrl&lt;/kbd&gt;+&lt;kbd&gt;C&lt;/kbd&gt; can now be used to discard the current input in REPL.</p>
+</li><li>
+<p>Now, <a href="Alda/REPL.html"><code>Alda::REPL</code></a> takes better care of indents.</p>
+</li><li>
+<p>Added no-color mode and no-preview mode for REPL.</p>
+</li><li>
+<p>Now <a href="Alda/REPL/TempScore.html#method-i-score"><code>Alda::REPL::TempScore#score</code></a> and <a href="Alda/REPL/TempScore.html#method-i-map"><code>Alda::REPL::TempScore#map</code></a> output in blue color.</p>
+</li></ul>
+
+<p>New APIs:</p>
+<ul><li>
+<p>Added <a href="Alda/Raw.html"><code>Alda::Raw</code></a>.</p>
+</li><li>
+<p>Added <a href="Alda/Utils.html#method-c-warn"><code>Alda::Utils::warn</code></a>, <a href="Alda/Utils.html#method-c-win_platform-3F"><code>Alda::Utils::win_platform?</code></a>, <a href="Alda/Utils.html#method-c-snake_to_slug"><code>Alda::Utils::snake_to_slug</code></a>, <a href="Alda/Utils.html#method-c-slug_to_snake"><code>Alda::Utils::slug_to_snake</code></a>.</p>
+</li><li>
+<p>Added <a href="Alda/Event.html#method-i-is_event_of-3F"><code>Alda::Event#is_event_of?</code></a>. It is overridden in <a href="Alda/EventContainer.html#method-i-is_event_of-3F"><code>Alda::EventContainer#is_event_of?</code></a>.</p>
+</li><li>
+<p>Added <a href="Alda/Event.html#method-i-3D-3D"><code>Alda::Event#==</code></a> and <a href="Alda/EventList.html#method-i-3D-3D"><code>Alda::EventList#==</code></a>. It is overridden in many subclasses.</p>
+</li><li>
+<p>Added <a href="Alda/EventContainer.html#method-i-check_in_chord"><code>Alda::EventContainer#check_in_chord</code></a>.</p>
+</li><li>
+<p>Added Alda::EventList#l.</p>
+</li><li>
+<p>Added Alda::EventList#raw.</p>
+</li><li>
+<p>Added <a href="Alda/REPL.html#attribute-i-color"><code>Alda::REPL#color</code></a>, <a href="Alda/REPL.html#attribute-i-preview"><code>Alda::REPL#preview</code></a>.</p>
+</li><li>
+<p>Added <a href="Alda/REPL.html#method-i-setup_repl"><code>Alda::REPL#setup_repl</code></a>, <a href="Alda/REPL.html#method-i-readline"><code>Alda::REPL#readline</code></a>.</p>
+</li><li>
+<p>Added <a href="Alda/REPL/TempScore.html#method-i-new_score"><code>Alda::REPL::TempScore#new_score</code></a>, <a href="Alda/REPL/TempScore.html#method-i-score_text"><code>Alda::REPL::TempScore#score_text</code></a>, <a href="Alda/REPL/TempScore.html#method-i-score_data"><code>Alda::REPL::TempScore#score_data</code></a>, <a href="Alda/REPL/TempScore.html#method-i-score_events"><code>Alda::REPL::TempScore#score_events</code></a>.</p>
+</li><li>
+<p>Added <a href="Alda.html#method-c-pipe"><code>Alda::pipe</code></a>.</p>
+</li><li>
+<p>Added <a href="Alda.html#method-c-processes"><code>Alda::processes</code></a>.</p>
+</li><li>
+<p>Added <a href="Alda/NREPLServerError.html"><code>Alda::NREPLServerError</code></a>.</p>
+</li><li>
+<p>Added <a href="Alda/GenerationError.html#method-c-assert_generation"><code>Alda::GenerationError::assert_generation</code></a>.</p>
+</li></ul>
+
+<p>Slightly improved docs:</p>
+<ul><li>
+<p><a href="Alda/EventContainer.html#attribute-i-event"><code>Alda::EventContainer#event</code></a>.</p>
+</li><li>
+<p>The overriding <code>to_alda_code</code>‘s and <code>on_contained</code>’s.</p>
+</li><li>
+<p><a href="Alda/Sequence.html"><code>Alda::Sequence</code></a>, <a href="Alda/Sequence/RefineFlatten.html#method-i-flatten"><code>Alda::Sequence::RefineFlatten#flatten</code></a>.</p>
+</li><li>
+<p>The patches to Ruby’s core classes.</p>
+</li><li>
+<p><a href="Kernel.html"><code>Kernel</code></a>.</p>
+</li><li>
+<p><a href="Alda/EventList.html#method-c-new"><code>Alda::EventList::new</code></a>.</p>
+</li><li>
+<p><a href="Alda/OrderError.html#method-c-new"><code>Alda::OrderError::new</code></a>.</p>
+</li><li>
+<p><a href="Alda/InlineLisp.html"><code>Alda::InlineLisp</code></a>.</p>
+</li><li>
+<p><a href="Alda/OrderError.html#attribute-i-expected"><code>Alda::OrderError#expected</code></a>.</p>
+</li></ul>
+
+<p>Much better docs:</p>
+<ul><li>
+<p><a href="Alda/EventContainer.html#method-i-2F"><code>Alda::EventContainer#/</code></a>.</p>
+</li><li>
+<p><a href="Alda/EventList.html#method-i-on_contained"><code>Alda::EventList#on_contained</code></a>.</p>
+</li><li>
+<p><a href="Alda/REPL/TempScore.html"><code>Alda::REPL::TempScore</code></a>.</p>
+</li></ul>
+
+<p>New examples:</p>
+<ul><li>
+<p>dynamics,</p>
+</li><li>
+<p>track-volume,</p>
+</li><li>
+<p>variables-2.</p>
+</li></ul>
+
+<h3 id="label-BREAKING+changes">BREAKING changes<span><a href="#label-BREAKING+changes">&para;</a> <a href="#top">&uarr;</a></span></h3>
+
+<p>Removed APIs:</p>
+<ul><li>
+<p>Removed Alda::SetVariable#original_events.</p>
+</li><li>
+<p>Removed Alda::repl. Now calling <code>Alda.repl</code> will trigger commandline <code>alda repl</code>. For the old REPL function, use <code>Alda::REPL.new.run</code> instead.</p>
+</li><li>
+<p>Removed Alda::REPL::TempScore#history.</p>
+</li></ul>
+
+<p>Modified APIs or features:</p>
+<ul><li>
+<p>Now <a href="Alda/REPL.html#method-i-play_score"><code>Alda::REPL#play_score</code></a> does not call <a href="Alda/REPL.html#method-i-try_command"><code>Alda::REPL#try_command</code></a>.</p>
+</li><li>
+<p><a href="Alda/Score.html#method-i-load"><code>Alda::Score#load</code></a> now use <a href="Alda/Raw.html"><code>Alda::Raw</code></a> instead of an <a href="Alda/InlineLisp.html"><code>Alda::InlineLisp</code></a> to load a file.</p>
+</li></ul>
+
+<h3 id="label-Fixed+bugs">Fixed bugs<span><a href="#label-Fixed+bugs">&para;</a> <a href="#top">&uarr;</a></span></h3>
+<ul><li>
+<p>Fixed: sometimes <a href="Alda/Event.html#attribute-i-parent"><code>Alda::Event#parent</code></a> returns wrong result because it is not updated in some cases.</p>
+</li><li>
+<p>Fixed (potentially BREAKING): <a href="Hash.html#method-i-to_alda_code"><code>Hash#to_alda_code</code></a> returns <code>[[k1 v1] [k2 v2]]</code>. Now, it returns <code>{k1 v1 k2 v2}</code>.</p>
+</li><li>
+<p>Use reline instead of readline in <a href="Alda/REPL.html"><code>Alda::REPL</code></a> because Ruby 3.3 is dropping the shipment of readline-ext.</p>
+</li></ul>
+
+<h3 id="label-Others">Others<span><a href="#label-Others">&para;</a> <a href="#top">&uarr;</a></span></h3>
+<ul><li>
+<p>Added changelog.</p>
+</li><li>
+<p>Modified the homepage and changelog URI in gemspec.</p>
+</li><li>
+<p>Fixed the email in code of conduct.</p>
+</li></ul>
+
+<h2 id="label-v0.2.1+-282020-08-13-29">v0.2.1 (2020-08-13)<span><a href="#label-v0.2.1+-282020-08-13-29">&para;</a> <a href="#top">&uarr;</a></span></h2>
+<ul><li>
+<p>Fixed the bug in <code>examples/bwv846_prelude.rb</code>. The file isn’t changed when the version change from <a href="#v014-2020-04-23">v0.1.4</a> to <a href="#v020-2020-05-08">v0.2.0</a> but the new features in 0.2.0 made some codes in that file stop working.</p>
+</li></ul>
+
+<h2 id="label-v0.2.0+-282020-05-08-29">v0.2.0 (2020-05-08)<span><a href="#label-v0.2.0+-282020-05-08-29">&para;</a> <a href="#top">&uarr;</a></span></h2>
+<ul><li>
+<p>Separated <code>alda-rb.rb</code> into several files.</p>
+</li><li>
+<p>REPL now supports <code>map</code>, <code>score</code>, and <code>new</code>.</p>
+</li><li>
+<p>Added a lot of docs. Can be seen <a href="https://ulysseszh.github.io/doc/alda-rb">here</a>.</p>
+</li><li>
+<p>Added <a href="Alda/Event.html#method-i-detach_from_parent"><code>Alda::Event#detach_from_parent</code></a>.</p>
+</li><li>
+<p>Fixed the bug that dot accessor of <a href="Alda/Part.html"><code>Alda::Part</code></a> does not return the container (or the part itself).</p>
+</li><li>
+<p>Added <a href="Alda/LispIdentifier.html"><code>Alda::LispIdentifier</code></a>.</p>
+</li><li>
+<p>Fixed <a href="Alda/EventList.html#method-i-import"><code>Alda::EventList#import</code></a> now returns <code>nil</code>.</p>
+</li><li>
+<p>Added some unit tests.</p>
+</li><li>
+<p>Fixed the bug that creating an <a href="Alda/GetVariable.html"><code>Alda::GetVariable</code></a> occasionally crashes.</p>
+</li><li>
+<p>Fixed bug that inline lisp is mistakenly interpreted as set-variable.</p>
+</li></ul>
+
+<h2 id="label-v0.1.4+-282020-04-23-29">v0.1.4 (2020-04-23)<span><a href="#label-v0.1.4+-282020-04-23-29">&para;</a> <a href="#top">&uarr;</a></span></h2>
+<ul><li>
+<p>The Ruby requirements become <code>&quot;&gt;= 2.7&quot;</code>, so update your Ruby.</p>
+</li><li>
+<p>Added a colorful REPL! Run Alda::repl and see.</p>
+
+<pre>$ ruby -ralda-rb -e &quot;Alda.repl&quot;
+&gt; puts status
+[27713] Server up (2/2 workers available, backend port: 33245)
+&gt; piano_ c d e f
+[piano: c d e f]
+&gt; 5.times do
+&gt; c
+&gt; end
+c c c c c
+&gt; puts history
+[piano: c d e f]
+c c c c c
+&gt; play
+&gt; save &#39;temp.alda&#39;
+&gt; puts `cat temp.alda`
+[piano: c d e f]
+c c c c c
+&gt; system &#39;rm temp.alda&#39;
+&gt; exit</pre>
+</li><li>
+<p>More than 2 events written together will become an <a href="Alda/Sequence.html"><code>Alda::Sequence</code></a> object (contained by an <a href="Alda/EventContainer.html"><code>Alda::EventContainer</code></a>). Events that can use such sugar includes: part (supports dot accessor), note, rest, octave, voice, marker, at-marker.</p>
+
+<pre class="ruby"><span class="ruby-constant">Alda</span><span class="ruby-operator">::</span><span class="ruby-constant">Score</span>.<span class="ruby-identifier">new</span> { <span class="ruby-identifier">p</span>((<span class="ruby-identifier">c</span> <span class="ruby-identifier">d</span> <span class="ruby-identifier">e</span>).<span class="ruby-identifier">event</span>.<span class="ruby-identifier">class</span>) } <span class="ruby-comment"># =&gt; Alda::Sequence</span>
+</pre>
+</li><li>
+<p>Added: <code>o!</code> means octave up, <code>o?</code> means octave down. This is to be compatible with the sugar above.</p>
+</li><li>
+<p>Similarly added: <code>!</code> at the end of a note means sharp, and <code>?</code> for flat, <code>_</code> for natural. It conflicts with slur, so <code>__</code> means slur, and <code><em>_</em></code> means slur and natural.</p>
+
+<pre class="ruby"><span class="ruby-constant">Alda</span><span class="ruby-operator">::</span><span class="ruby-constant">Score</span>.<span class="ruby-identifier">new</span> { <span class="ruby-identifier">piano_</span> <span class="ruby-identifier">c</span> <span class="ruby-identifier">o?</span> <span class="ruby-identifier">b?</span> <span class="ruby-identifier">o!</span> <span class="ruby-identifier">c</span> <span class="ruby-identifier">o?</span> <span class="ruby-identifier">b?</span> }.<span class="ruby-identifier">to_s</span>
+<span class="ruby-comment"># =&gt; &quot;[piano: c &lt; b- &gt; c &lt; b-]&quot;</span>
+</pre>
+</li><li>
+<p>Added attr accessor <a href="Alda/Event.html#attribute-i-container"><code>Alda::Event#container</code></a>.</p>
+</li><li>
+<p>Fixed the bug occurring when one uses a dot accessor wrongly.</p>
+</li><li>
+<p>Added <a href="Alda/Sequence.html#method-c-join"><code>Alda::Sequence::join</code></a> to join several events into a flatten sequence.</p>
+</li><li>
+<p>Fixed the bug in <code>examples/alternate_endings.rb</code>.</p>
+</li><li>
+<p>Some of the examples are rewritten using the new sugar feature.</p>
+</li><li>
+<p>Assign an alda variable by using a method ending with 2 underlines, or pass a block for it. The following three are equivalent:</p>
+
+<pre class="ruby"><span class="ruby-constant">Alda</span><span class="ruby-operator">::</span><span class="ruby-constant">Score</span>.<span class="ruby-identifier">new</span> { <span class="ruby-identifier">var__</span> <span class="ruby-identifier">c</span> <span class="ruby-identifier">d</span> <span class="ruby-identifier">e</span>; <span class="ruby-identifier">piano_</span> <span class="ruby-identifier">var</span> }
+</pre>
+
+<pre class="ruby"><span class="ruby-constant">Alda</span><span class="ruby-operator">::</span><span class="ruby-constant">Score</span>.<span class="ruby-identifier">new</span> { <span class="ruby-identifier">var</span> { <span class="ruby-identifier">c</span> <span class="ruby-identifier">d</span> <span class="ruby-identifier">e</span> }; <span class="ruby-identifier">piano_</span> <span class="ruby-identifier">var</span> }
+</pre>
+
+<pre class="ruby"><span class="ruby-constant">Alda</span><span class="ruby-operator">::</span><span class="ruby-constant">Score</span>.<span class="ruby-identifier">new</span> { <span class="ruby-identifier">var__</span> { <span class="ruby-identifier">c</span> <span class="ruby-identifier">d</span> <span class="ruby-identifier">e</span> }; <span class="ruby-identifier">piano_</span> <span class="ruby-identifier">var</span> }
+</pre>
+
+<p>This one is slightly different but has the same effect:</p>
+
+<pre class="ruby"><span class="ruby-constant">Alda</span><span class="ruby-operator">::</span><span class="ruby-constant">Score</span>.<span class="ruby-identifier">new</span> { <span class="ruby-identifier">var__</span> <span class="ruby-identifier">c</span>, <span class="ruby-identifier">d</span>, <span class="ruby-identifier">e</span>; <span class="ruby-identifier">piano_</span> <span class="ruby-identifier">var</span> }
+</pre>
+
+<p>The name of a variable can be same as that of a lisp function if there is no ambiguity.</p>
+</li><li>
+<p>The message of <a href="Alda/CommandLineError.html"><code>Alda::CommandLineError</code></a> is optimized.</p>
+</li><li>
+<p>Added <a href="Alda/OrderError.html"><code>Alda::OrderError</code></a>, which is used instead of RuntimeError, representing a disorder of events.</p>
+
+<pre class="ruby"><span class="ruby-constant">Alda</span><span class="ruby-operator">::</span><span class="ruby-constant">Score</span>.<span class="ruby-identifier">new</span> <span class="ruby-keyword">do</span>
+  <span class="ruby-identifier">motif</span> = <span class="ruby-identifier">f4</span> <span class="ruby-identifier">f</span> <span class="ruby-identifier">e</span> <span class="ruby-identifier">e</span> <span class="ruby-identifier">d</span> <span class="ruby-identifier">d</span> <span class="ruby-identifier">c2</span>
+  <span class="ruby-identifier">g4</span> <span class="ruby-identifier">f</span> <span class="ruby-identifier">e</span> <span class="ruby-identifier">d</span> <span class="ruby-identifier">c2</span>
+  <span class="ruby-identifier">p</span> <span class="ruby-ivar">@events</span>.<span class="ruby-identifier">size</span> <span class="ruby-comment"># =&gt; 2</span>
+  <span class="ruby-identifier">c4</span> <span class="ruby-identifier">c</span> <span class="ruby-identifier">g</span> <span class="ruby-identifier">g</span> <span class="ruby-identifier">a</span> <span class="ruby-identifier">a</span> <span class="ruby-identifier">g2</span> <span class="ruby-identifier">motif</span>
+<span class="ruby-keyword">rescue</span> <span class="ruby-constant">OrderError</span> <span class="ruby-operator">=&gt;</span> <span class="ruby-identifier">e</span>
+  <span class="ruby-identifier">p</span> <span class="ruby-ivar">@events</span>.<span class="ruby-identifier">size</span> <span class="ruby-comment"># =&gt; 1</span>
+  <span class="ruby-identifier">p</span> <span class="ruby-identifier">e</span>.<span class="ruby-identifier">expected</span>   <span class="ruby-comment"># =&gt; #&lt;Alda::EventContainer:...&gt;</span>
+  <span class="ruby-identifier">p</span> <span class="ruby-identifier">e</span>.<span class="ruby-identifier">got</span>        <span class="ruby-comment"># =&gt; #&lt;Alda::EventContainer:...&gt;</span>
+<span class="ruby-keyword">end</span>
+</pre>
+</li><li>
+<p>The block passed to an <a href="Alda/EventList.html"><code>Alda::EventList</code></a> object is now called in <a href="Alda/Event.html#method-i-on_contained"><code>Alda::Event#on_contained</code></a>, so <code>@parent</code>, <code>@container</code> etc can be gotten inside.</p>
+</li><li>
+<p><a href="Alda/EventList.html"><code>Alda::EventList</code></a> can access methods in <code>@parent</code>.</p>
+</li><li>
+<p>Canceled Alda::method_missing. Use meta-programming to define methods instead. You can now use <code>include Alda</code> to import such commands.</p>
+
+<pre class="ruby"><span class="ruby-identifier">include</span> <span class="ruby-constant">Alda</span>
+<span class="ruby-identifier">version</span> <span class="ruby-comment"># =&gt; &quot;Client version: 1.4.1\nServer version: [27713] 1.4.1\n&quot;</span>
+</pre>
+</li><li>
+<p>Added <a href="Kernel.html#method-i-alda"><code>Kernel#alda</code></a>. It runs <code>alda</code> at command line and does not capture the output.</p>
+
+<pre class="ruby"><span class="ruby-identifier">alda</span> <span class="ruby-string">&#39;version&#39;</span>
+</pre>
+</li><li>
+<p>Use <a href="Alda.html#method-c-5B-5D"><code>Alda::[]</code></a> to specify command options (not subcommand options):</p>
+
+<pre class="ruby"><span class="ruby-constant">Alda</span>[<span class="ruby-value">quiet:</span> <span class="ruby-keyword">true</span>].<span class="ruby-identifier">play</span> <span class="ruby-value">code:</span> <span class="ruby-string">&#39;piano: c d e f&#39;</span> <span class="ruby-comment"># =&gt; &quot;&quot;</span>
+</pre>
+
+<p>The options specified will be remembered. Invoke <code>Alda::clear_options</code> to forget them.</p>
+</li><li>
+<p>Added <a href="Alda/CommandLineError.html#method-i-port"><code>Alda::CommandLineError#port</code></a>.</p>
+
+<pre class="ruby"><span class="ruby-keyword">begin</span>
+  <span class="ruby-constant">Alda</span>[<span class="ruby-value">port:</span> <span class="ruby-value">1108</span>].<span class="ruby-identifier">play</span> <span class="ruby-value">code:</span> <span class="ruby-string">&#39;y&#39;</span>
+<span class="ruby-keyword">rescue</span> <span class="ruby-constant">CommandLineError</span> <span class="ruby-operator">=&gt;</span> <span class="ruby-identifier">e</span>
+  <span class="ruby-identifier">e</span>.<span class="ruby-identifier">port</span> <span class="ruby-comment"># =&gt; 1108</span>
+<span class="ruby-keyword">end</span>
+</pre>
+</li><li>
+<p>Added <a href="Alda/Score.html#method-i-save"><code>Alda::Score#save</code></a> and <a href="Alda/Score.html#method-i-load"><code>Alda::Score#load</code></a> to save and load Alda files.</p>
+
+<pre class="ruby"><span class="ruby-constant">Alda</span><span class="ruby-operator">::</span><span class="ruby-constant">Score</span>.<span class="ruby-identifier">new</span> { <span class="ruby-identifier">c</span> <span class="ruby-identifier">d</span> <span class="ruby-identifier">e</span> }.<span class="ruby-identifier">save</span> <span class="ruby-string">&#39;temp.alda&#39;</span>
+<span class="ruby-constant">File</span>.<span class="ruby-identifier">read</span> <span class="ruby-string">&#39;temp.alda&#39;</span> <span class="ruby-comment">#  =&gt; &quot;[c d e]\n&quot;</span>
+</pre>
+</li></ul>
+
+<h2 id="label-v0.1.2+-282020-04-16-29">v0.1.2 (2020-04-16)<span><a href="#label-v0.1.2+-282020-04-16-29">&para;</a> <a href="#top">&uarr;</a></span></h2>
+<ul><li>
+<p>Added examples</p>
+</li><li>
+<p>Fixed bug when writing <code>key_sig b: [:flat]</code></p>
+</li><li>
+<p>Added sequence sugar(s) and alternative repetition sugar (<code>%</code>) (see examples/alternate_endings.rb)</p>
+</li><li>
+<p>Write options naturally for alda command line (<code>Alda.play code: &#39;piano: c&#39;</code>)</p>
+</li><li>
+<p>Can pass scores to alda command line (<code>Alda.play code: Alda::Score.new</code>)</p>
+</li><li>
+<p>Added <a href="Alda/Score.html#method-i-parse"><code>Alda::Score#parse</code></a>, <a href="Alda/Score.html#method-i-export"><code>Alda::Score#export</code></a>, and <a href="Alda/Score.html#method-i-to_s"><code>Alda::Score#to_s</code></a></p>
+</li><li>
+<p>Fixed bug when writing <code>+o/c</code></p>
+</li><li>
+<p>Added support for dot accessor (see example/dot_accessor.rb)</p>
+</li><li>
+<p>Fixed some mistakes in docs and <a href="README_md.html">README</a></p>
+</li></ul>
+
+<h2 id="label-v0.1.0+-282020-04-15-29">v0.1.0 (2020-04-15)<span><a href="#label-v0.1.0+-282020-04-15-29">&para;</a> <a href="#top">&uarr;</a></span></h2>
+
+<p>The original version.</p>
+
+</main>
+
+
+
+<footer id="validator-badges" role="contentinfo">
+  <p><a href="https://validator.w3.org/check/referer">Validate</a>
+  <p>Generated by <a href="https://ruby.github.io/rdoc/">RDoc</a> 6.7.0.
+  <p>Based on <a href="http://deveiate.org/projects/Darkfish-RDoc/">Darkfish</a> by <a href="http://deveiate.org">Michael Granger</a>.
+</footer>
+

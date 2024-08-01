@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+
+<title>class Alda::REPL - RDoc Documentation</title>
+
+<script type="text/javascript">
+  var rdoc_rel_prefix = "../";
+  var index_rel_prefix = "../";
+</script>
+
+<script src="../js/navigation.js" defer></script>
+<script src="../js/search.js" defer></script>
+<script src="../js/search_index.js" defer></script>
+<script src="../js/searcher.js" defer></script>
+<script src="../js/darkfish.js" defer></script>
+
+<link href="../css/fonts.css" rel="stylesheet">
+<link href="../css/rdoc.css" rel="stylesheet">
+
+
+<body id="top" role="document" class="class">
+<nav role="navigation">
+  <div id="project-navigation">
+    <div id="home-section" role="region" title="Quick navigation" class="nav-section">
+  <h2>
+    <a href="../index.html" rel="home">Home</a>
+  </h2>
+
+  <div id="table-of-contents-navigation">
+    <a href="../table_of_contents.html#pages">Pages</a>
+    <a href="../table_of_contents.html#classes">Classes</a>
+    <a href="../table_of_contents.html#methods">Methods</a>
+  </div>
+</div>
+
+    <div id="search-section" role="search" class="project-section initially-hidden">
+  <form action="#" method="get" accept-charset="utf-8">
+    <div id="search-field-wrapper">
+      <input id="search-field" role="combobox" aria-label="Search"
+             aria-autocomplete="list" aria-controls="search-results"
+             type="text" name="search" placeholder="Search (/) for a class, method, ..." spellcheck="false"
+             title="Type to search, Up and Down to navigate, Enter to load">
+    </div>
+
+    <ul id="search-results" aria-label="Search Results"
+        aria-busy="false" aria-expanded="false"
+        aria-atomic="false" class="initially-hidden"></ul>
+  </form>
+</div>
+
+  </div>
+
+  
+
+  <div id="class-metadata">
+    
+    
+<div id="parent-class-section" class="nav-section">
+  <h3>Parent</h3>
+
+  <p class="link">Object
+</div>
+
+    
+    
+    
+<!-- Method Quickref -->
+<div id="method-list-section" class="nav-section">
+  <h3>Methods</h3>
+
+  <ul class="link-list" role="directory">
+    <li ><a href="#method-c-new">::new</a>
+    <li ><a href="#method-i-clear_history">#clear_history</a>
+    <li ><a href="#method-i-history">#history</a>
+    <li ><a href="#method-i-message">#message</a>
+    <li ><a href="#method-i-play_score">#play_score</a>
+    <li ><a href="#method-i-process_rb_code">#process_rb_code</a>
+    <li ><a href="#method-i-raw_message">#raw_message</a>
+    <li ><a href="#method-i-rb_code">#rb_code</a>
+    <li ><a href="#method-i-readline">#readline</a>
+    <li ><a href="#method-i-run">#run</a>
+    <li ><a href="#method-i-setup_repl">#setup_repl</a>
+    <li ><a href="#method-i-start">#start</a>
+    <li ><a href="#method-i-terminate">#terminate</a>
+    <li ><a href="#method-i-try_command">#try_command</a>
+  </ul>
+</div>
+
+  </div>
+</nav>
+
+<main role="main" aria-labelledby="class-Alda::REPL">
+  <h1 id="class-Alda::REPL" class="class">
+    class Alda::REPL
+  </h1>
+
+  <section class="description">
+    
+<p>An instance of this class is an REPL session.</p>
+
+<p>It provides an <a href="REPL/TempScore.html"><code>Alda::REPL::TempScore</code></a> for you to operate on. To see what methods you can call in an REPL session, see instance methods of <a href="REPL/TempScore.html"><code>Alda::REPL::TempScore</code></a>.</p>
+
+<p>The session uses “&gt; ” to indicate your input. Your input should be ruby codes, and the codes will be sent to an <a href="REPL/TempScore.html"><code>Alda::REPL::TempScore</code></a> and executed.</p>
+
+<p>After executing the ruby codes, if the score is not empty, it is played, and the translated alda codes are printed.</p>
+
+<p>Note that every time your ruby codes input is executed, the score is cleared beforehand. To check the result of your previous input, run <code>puts history</code>.</p>
+
+<p>Unlike IRB, this REPL does not print the result of the executed codes. Use <code>p</code> or <code>puts</code> if you want.</p>
+
+<p><code>Interrupt</code> and <code>SystemExit</code> exceptions are rescued and will not cause the process terminating. <code>exit</code> terminates the REPL session instead of the process.</p>
+
+<p>To start an REPL session in a ruby program, use <a href="REPL.html#method-i-run"><code>run</code></a>. To start an REPL session conveniently from command line, run command <code>alda-irb</code>. For details about this command line tool, run <code>alda-irb --help</code>.</p>
+
+<pre>$ alda-irb
+&gt; p processes.last
+{:id=&gt;&quot;dus&quot;, :port=&gt;34317, :state=&gt;nil, :expiry=&gt;nil, :type=&gt;:repl_server}
+&gt; piano_; c d e f
+piano: [c d e f]
+&gt; 5.times do
+.   c
+&gt;   end
+c c c c c
+&gt; score_text
+piano: [c d e f]
+c c c c c
+&gt; play
+Playing...
+&gt; save &#39;temp.alda&#39;
+&gt; puts `cat temp.alda`
+piano: [c d e f]
+c c c c c
+&gt; system &#39;rm temp.alda&#39;
+&gt; exit</pre>
+
+<p>Notice that there is a significant difference between Alda 1 REPL and Alda 2 REPL. In short, Alda 2 has a much more powerful REPL than Alda 1, so it dropped the <code>--history</code> option in the <code>alda play</code> command line interface (<a href="https://github.com/alda-lang/alda/issues/367">alda-lang/alda#367</a>). It has an nREPL server, and this class simply functions by sending messages to the nREPL server. However, for Alda 1, this class maintains necessary information in the memory of the Ruby program, and the REPL is implemented by repeatedly running <code>alda play</code> in command line. Therefore, this class functions differently for Alda 1 and Alda 2 and you thus should not modify <a href="../Alda.html#attribute-c-generation"><code>Alda::generation</code></a> during an REPL session.</p>
+
+<p>It is also possible to use this class as a Ruby wrapper of APIs of the Alda nREPL server in Alda 2. In this usage, you never need to call <a href="REPL.html#method-i-run"><code>run</code></a>, and you call <a href="REPL.html#method-i-message"><code>message</code></a> or <a href="REPL.html#method-i-raw_message"><code>raw_message</code></a> instead.</p>
+
+<pre class="ruby"><span class="ruby-identifier">repl</span> = <span class="ruby-constant">Alda</span><span class="ruby-operator">::</span><span class="ruby-constant">REPL</span>.<span class="ruby-identifier">new</span>
+<span class="ruby-identifier">repl</span>.<span class="ruby-identifier">message</span> <span class="ruby-value">:eval_and_play</span>, <span class="ruby-value">code:</span> <span class="ruby-string">&#39;piano: c d e f&#39;</span> <span class="ruby-comment"># =&gt; nil</span>
+<span class="ruby-identifier">repl</span>.<span class="ruby-identifier">message</span> <span class="ruby-value">:eval_and_play</span>, <span class="ruby-value">code:</span> <span class="ruby-string">&#39;g a b &gt; c&#39;</span> <span class="ruby-comment"># =&gt; nil</span>
+<span class="ruby-identifier">repl</span>.<span class="ruby-identifier">message</span> <span class="ruby-value">:score_text</span> <span class="ruby-comment"># =&gt; &quot;piano: [c d e f]\ng a b &gt; c\n&quot;</span>
+<span class="ruby-identifier">repl</span>.<span class="ruby-identifier">message</span> <span class="ruby-value">:eval_and_play</span>, <span class="ruby-value">code:</span> <span class="ruby-string">&#39;this will cause an error&#39;</span> <span class="ruby-comment"># (raises Alda::NREPLServerError)</span>
+</pre>
+
+  </section>
+
+  <section id="5Buntitled-5D" class="documentation-section">
+
+
+
+    <section class="attribute-method-details" class="method-section">
+      <header>
+        <h3>Attributes</h3>
+      </header>
+
+      <div id="attribute-i-color" class="method-detail">
+        <div class="method-heading attribute-method-heading">
+          <span class="method-name">color</span><span
+            class="attribute-access-type">[RW]</span>
+        </div>
+
+        <div class="method-description">
+        <p>Whether the output should be colored.</p>
+        </div>
+      </div>
+      <div id="attribute-i-host" class="method-detail">
+        <div class="method-heading attribute-method-heading">
+          <span class="method-name">host</span><span
+            class="attribute-access-type">[R]</span>
+        </div>
+
+        <div class="method-description">
+        <p>The host of the nREPL server. Only useful in Alda 2.</p>
+        </div>
+      </div>
+      <div id="attribute-i-port" class="method-detail">
+        <div class="method-heading attribute-method-heading">
+          <span class="method-name">port</span><span
+            class="attribute-access-type">[R]</span>
+        </div>
+
+        <div class="method-description">
+        <p>The port of the nREPL server. Only useful in Alda 2.</p>
+        </div>
+      </div>
+      <div id="attribute-i-preview" class="method-detail">
+        <div class="method-heading attribute-method-heading">
+          <span class="method-name">preview</span><span
+            class="attribute-access-type">[RW]</span>
+        </div>
+
+        <div class="method-description">
+        <p>Whether a preview of what Alda code will be played everytime you input ruby codes.</p>
+        </div>
+      </div>
+      <div id="attribute-i-reline" class="method-detail">
+        <div class="method-heading attribute-method-heading">
+          <span class="method-name">reline</span><span
+            class="attribute-access-type">[RW]</span>
+        </div>
+
+        <div class="method-description">
+        <p>Whether to use Reline for input. When it is false, the REPL session will be less buggy but less powerful.</p>
+        </div>
+      </div>
+    </section>
+
+
+     <section id="public-class-5Buntitled-5D-method-details" class="method-section">
+       <header>
+         <h3>Public Class Methods</h3>
+       </header>
+
+      <div id="method-c-new" class="method-detail ">
+        <div class="method-header">
+          <div class="method-heading">
+            <span class="method-callseq">
+              new(**opts) &rarr; Alda::REPL
+            </span>
+            <span class="method-click-advice">click to toggle source</span>
+          </div>
+        </div>
+
+        <div class="method-description">
+          <p>Creates a new <a href="REPL.html"><code>Alda::REPL</code></a>. The parameter <code>color</code> specifies whether the output should be colored (sets <a href="REPL.html#attribute-i-color"><code>color</code></a>). The parameter <code>preview</code> specifies whether a preview of what Alda code will be played everytime you input ruby codes (sets <a href="REPL.html#attribute-i-preview"><code>preview</code></a>). The parameter <code>reline</code> specifies whether to use Reline for input.</p>
+
+<p>The <code>opts</code> are passed to the command line of <code>alda repl</code>. Available options are <code>host</code>, <code>port</code>, etc. Run <code>alda repl --help</code> for more info. If <code>port</code> is specified and <code>host</code> is not or is specified to be <code>&quot;localhost&quot;</code> or <code>&quot;127.0.0.1&quot;</code>, then this method will try to connect to an existing Alda <a href="REPL.html"><code>REPL</code></a> server. A new one will be started only if no existing server is found.</p>
+
+<p>The <code>opts</code> are ignored in Alda 1.</p>
+
+          <div class="method-source-code" id="new-source">
+            <pre><span class="ruby-comment"># File lib/alda-rb/repl.rb, line 249</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">initialize</span> <span class="ruby-value">color:</span> <span class="ruby-keyword">true</span>, <span class="ruby-value">preview:</span> <span class="ruby-keyword">true</span>, <span class="ruby-value">reline:</span> <span class="ruby-keyword">true</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">opts</span>
+  <span class="ruby-ivar">@score</span> = <span class="ruby-constant">TempScore</span>.<span class="ruby-identifier">new</span> <span class="ruby-keyword">self</span>
+  <span class="ruby-ivar">@binding</span> = <span class="ruby-ivar">@score</span>.<span class="ruby-identifier">get_binding</span>
+  <span class="ruby-comment"># IRB once changed the API of RubyLex#initialize. Take care of that.</span>
+  <span class="ruby-ivar">@lex</span> = <span class="ruby-constant">RubyLex</span>.<span class="ruby-identifier">new</span> <span class="ruby-operator">*</span>(<span class="ruby-constant">RubyLex</span>.<span class="ruby-identifier">instance_method</span>(<span class="ruby-value">:initialize</span>).<span class="ruby-identifier">arity</span> <span class="ruby-operator">==</span> <span class="ruby-value">0</span> <span class="ruby-operator">?</span> [] <span class="ruby-operator">:</span> [<span class="ruby-ivar">@binding</span>])
+  <span class="ruby-ivar">@color</span> = <span class="ruby-identifier">color</span>
+  <span class="ruby-ivar">@preview</span> = <span class="ruby-identifier">preview</span>
+  <span class="ruby-ivar">@reline</span> = <span class="ruby-identifier">reline</span>
+  <span class="ruby-identifier">setup_repl</span> <span class="ruby-identifier">opts</span>
+<span class="ruby-keyword">end</span></pre>
+          </div>
+        </div>
+
+
+      </div>
+
+    </section>
+
+     <section id="public-instance-5Buntitled-5D-method-details" class="method-section">
+       <header>
+         <h3>Public Instance Methods</h3>
+       </header>
+
+      <div id="method-i-clear_history" class="method-detail ">
+        <div class="method-header">
+          <div class="method-heading">
+            <span class="method-callseq">
+              clear_history() &rarr; nil
+            </span>
+            <span class="method-click-advice">click to toggle source</span>
+          </div>
+        </div>
+
+        <div class="method-description">
+          <p>In Alda 1, clears <a href="REPL.html#method-i-history"><code>history</code></a>. In Alda 2, askes the nREPL server to clear its history (start a new score).</p>
+
+          <div class="method-source-code" id="clear_history-source">
+            <pre><span class="ruby-comment"># File lib/alda-rb/repl.rb, line 506</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">clear_history</span>
+  <span class="ruby-keyword">if</span> <span class="ruby-constant">Alda</span>.<span class="ruby-identifier">v1?</span>
+    <span class="ruby-ivar">@history</span> = <span class="ruby-constant">StringIO</span>.<span class="ruby-identifier">new</span>
+  <span class="ruby-keyword">else</span>
+    <span class="ruby-identifier">try_command</span> { <span class="ruby-identifier">message</span> <span class="ruby-value">:new_score</span> }
+  <span class="ruby-keyword">end</span>
+  <span class="ruby-keyword">nil</span>
+<span class="ruby-keyword">end</span></pre>
+          </div>
+        </div>
+
+
+      </div>
+
+      <div id="method-i-history" class="method-detail ">
+        <div class="method-header">
+          <div class="method-heading">
+            <span class="method-callseq">
+              history() &rarr; String
+            </span>
+            <span class="method-click-advice">click to toggle source</span>
+          </div>
+        </div>
+
+        <div class="method-description">
+          <p>In Alda 1, it is the same as an attribute reader. In Alda 2, it asks the nREPL server for its score text and returns it.</p>
+
+          <div class="method-source-code" id="history-source">
+            <pre><span class="ruby-comment"># File lib/alda-rb/repl.rb, line 492</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">history</span>
+  <span class="ruby-keyword">if</span> <span class="ruby-constant">Alda</span>.<span class="ruby-identifier">v1?</span>
+    <span class="ruby-ivar">@history</span>
+  <span class="ruby-keyword">else</span>
+    <span class="ruby-identifier">try_command</span> { <span class="ruby-identifier">message</span> <span class="ruby-value">:score_text</span> }
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+          </div>
+        </div>
+
+
+      </div>
+
+      <div id="method-i-message" class="method-detail ">
+        <div class="method-header">
+          <div class="method-heading">
+            <span class="method-callseq">
+              message(op, **params) &rarr; String or Hash
+            </span>
+            <span class="method-click-advice">click to toggle source</span>
+          </div>
+        </div>
+
+        <div class="method-description">
+          <p>Sends a message to the nREPL server with the following format, with <code>op</code> being the operation name (the <code>op</code> field in the message), and <code>params</code> being the parameters (other fields in the message). Then, this method analyzes the response. If there is an error, raises <a href="NREPLServerError.html"><code>Alda::NREPLServerError</code></a>. Otherwise, if the response contains only one field, return the content of that field (a <a href="../String.html"><code>String</code></a>). Otherwise, return the whole response as a <a href="../Hash.html"><code>Hash</code></a>.</p>
+
+<pre class="ruby"><span class="ruby-identifier">repl</span> = <span class="ruby-constant">Alda</span><span class="ruby-operator">::</span><span class="ruby-constant">REPL</span>.<span class="ruby-identifier">new</span>
+<span class="ruby-identifier">repl</span>.<span class="ruby-identifier">message</span> <span class="ruby-value">:eval_and_play</span>, <span class="ruby-value">code:</span> <span class="ruby-string">&#39;piano: c d e f&#39;</span> <span class="ruby-comment"># =&gt; nil</span>
+<span class="ruby-identifier">repl</span>.<span class="ruby-identifier">message</span> <span class="ruby-value">:eval_and_play</span>, <span class="ruby-value">code:</span> <span class="ruby-string">&#39;g a b &gt; c&#39;</span> <span class="ruby-comment"># =&gt; nil</span>
+<span class="ruby-identifier">repl</span>.<span class="ruby-identifier">message</span> <span class="ruby-value">:score_text</span> <span class="ruby-comment"># =&gt; &quot;piano: [c d e f]\ng a b &gt; c\n&quot;</span>
+<span class="ruby-identifier">repl</span>.<span class="ruby-identifier">message</span> <span class="ruby-value">:eval_and_play</span>, <span class="ruby-value">code:</span> <span class="ruby-string">&#39;this will cause an error&#39;</span> <span class="ruby-comment"># (raises Alda::NREPLServerError)</span>
+</pre>
+
+          <div class="method-source-code" id="message-source">
+            <pre><span class="ruby-comment"># File lib/alda-rb/repl.rb, line 320</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">message</span> <span class="ruby-identifier">op</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">params</span>
+  <span class="ruby-identifier">result</span> = <span class="ruby-identifier">raw_message</span> <span class="ruby-value">op:</span> <span class="ruby-constant">Alda</span><span class="ruby-operator">::</span><span class="ruby-constant">Utils</span>.<span class="ruby-identifier">snake_to_slug</span>(<span class="ruby-identifier">op</span>), <span class="ruby-operator">**</span><span class="ruby-identifier">params</span>
+  <span class="ruby-identifier">result</span>.<span class="ruby-identifier">transform_keys!</span> { <span class="ruby-constant">Alda</span><span class="ruby-operator">::</span><span class="ruby-constant">Utils</span>.<span class="ruby-identifier">slug_to_snake</span> <span class="ruby-identifier">_1</span> }
+  <span class="ruby-keyword">if</span> (<span class="ruby-identifier">status</span> = <span class="ruby-identifier">result</span>.<span class="ruby-identifier">delete</span> <span class="ruby-value">:status</span>).<span class="ruby-identifier">include?</span> <span class="ruby-string">&#39;error&#39;</span>
+    <span class="ruby-identifier">raise</span> <span class="ruby-constant">Alda</span><span class="ruby-operator">::</span><span class="ruby-constant">NREPLServerError</span>.<span class="ruby-identifier">new</span> <span class="ruby-ivar">@host</span>, <span class="ruby-ivar">@port</span>, <span class="ruby-identifier">result</span>.<span class="ruby-identifier">delete</span>(<span class="ruby-value">:problems</span>), <span class="ruby-identifier">status</span>
+  <span class="ruby-keyword">end</span>
+  <span class="ruby-keyword">case</span> <span class="ruby-identifier">result</span>.<span class="ruby-identifier">size</span>
+  <span class="ruby-keyword">when</span> <span class="ruby-value">0</span> <span class="ruby-keyword">then</span> <span class="ruby-keyword">nil</span>
+  <span class="ruby-keyword">when</span> <span class="ruby-value">1</span> <span class="ruby-keyword">then</span> <span class="ruby-identifier">result</span>.<span class="ruby-identifier">values</span>.<span class="ruby-identifier">first</span>
+  <span class="ruby-keyword">else</span> <span class="ruby-identifier">result</span>
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+          </div>
+        </div>
+
+
+      </div>
+
+      <div id="method-i-play_score" class="method-detail ">
+        <div class="method-header">
+          <div class="method-heading">
+            <span class="method-callseq">
+              play_score(code) &rarr; nil
+            </span>
+            <span class="method-click-advice">click to toggle source</span>
+          </div>
+        </div>
+
+        <div class="method-description">
+          <p>Appends <code>code</code> to the history and plays the <code>code</code> as Alda code. In Alda 1, plays the score by sending <code>code</code> to command line alda. In Alda 2, sends <code>code</code> to the nREPL server for evaluating and playing.</p>
+
+          <div class="method-source-code" id="play_score-source">
+            <pre><span class="ruby-comment"># File lib/alda-rb/repl.rb, line 452</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">play_score</span> <span class="ruby-identifier">code</span>
+  <span class="ruby-keyword">if</span> <span class="ruby-constant">Alda</span>.<span class="ruby-identifier">v1?</span>
+    <span class="ruby-constant">Alda</span>.<span class="ruby-identifier">play</span> <span class="ruby-value">code:</span> <span class="ruby-identifier">code</span>, <span class="ruby-value">history:</span> <span class="ruby-ivar">@history</span>
+    <span class="ruby-ivar">@history</span>.<span class="ruby-identifier">puts</span> <span class="ruby-identifier">code</span>
+  <span class="ruby-keyword">else</span>
+    <span class="ruby-identifier">message</span> <span class="ruby-value">:eval_and_play</span>, <span class="ruby-value">code:</span> <span class="ruby-identifier">code</span>
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+          </div>
+        </div>
+
+
+      </div>
+
+      <div id="method-i-process_rb_code" class="method-detail ">
+        <div class="method-header">
+          <div class="method-heading">
+            <span class="method-callseq">
+              process_rb_code(code) &rarr; true or false
+            </span>
+            <span class="method-click-advice">click to toggle source</span>
+          </div>
+        </div>
+
+        <div class="method-description">
+          <p>Processes the Ruby codes read. Sends it to a score and sends the result to command line alda. Returns <code>false</code> for breaking the REPL main loop, <code>true</code> otherwise.</p>
+
+          <div class="method-source-code" id="process_rb_code-source">
+            <pre><span class="ruby-comment"># File lib/alda-rb/repl.rb, line 411</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">process_rb_code</span> <span class="ruby-identifier">code</span>
+  <span class="ruby-ivar">@score</span>.<span class="ruby-identifier">clear</span>
+  <span class="ruby-keyword">begin</span>
+    <span class="ruby-ivar">@binding</span>.<span class="ruby-identifier">eval</span> <span class="ruby-identifier">code</span>
+  <span class="ruby-keyword">rescue</span> <span class="ruby-constant">StandardError</span>, <span class="ruby-constant">ScriptError</span>, <span class="ruby-constant">Interrupt</span> <span class="ruby-operator">=&gt;</span> <span class="ruby-identifier">e</span>
+    <span class="ruby-identifier">$stderr</span>.<span class="ruby-identifier">print</span> <span class="ruby-identifier">e</span>.<span class="ruby-identifier">full_message</span>
+    <span class="ruby-keyword">return</span> <span class="ruby-keyword">true</span>
+  <span class="ruby-keyword">rescue</span> <span class="ruby-constant">SystemExit</span>
+    <span class="ruby-keyword">return</span> <span class="ruby-keyword">false</span>
+  <span class="ruby-keyword">end</span>
+  <span class="ruby-identifier">code</span> = <span class="ruby-ivar">@score</span>.<span class="ruby-identifier">events_alda_codes</span>
+  <span class="ruby-keyword">unless</span> <span class="ruby-identifier">code</span>.<span class="ruby-identifier">empty?</span>
+    <span class="ruby-identifier">$stdout</span>.<span class="ruby-identifier">puts</span> <span class="ruby-ivar">@color</span> <span class="ruby-operator">?</span> <span class="ruby-identifier">code</span>.<span class="ruby-identifier">yellow</span> <span class="ruby-operator">:</span> <span class="ruby-identifier">code</span>
+    <span class="ruby-identifier">try_command</span> { <span class="ruby-identifier">play_score</span> <span class="ruby-identifier">code</span> }
+  <span class="ruby-keyword">end</span>
+  <span class="ruby-keyword">true</span>
+<span class="ruby-keyword">end</span></pre>
+          </div>
+        </div>
+
+
+      </div>
+
+      <div id="method-i-raw_message" class="method-detail ">
+        <div class="method-header">
+          <div class="method-heading">
+            <span class="method-callseq">
+              raw_message(contents) &rarr; Hash
+            </span>
+            <span class="method-click-advice">click to toggle source</span>
+          </div>
+        </div>
+
+        <div class="method-description">
+          <p>Sends a message to the nREPL server and returns the response. The parameter <code>contents</code> is a <a href="../Hash.html"><code>Hash</code></a> or a JSON string.</p>
+
+<pre class="ruby"><span class="ruby-identifier">repl</span> = <span class="ruby-constant">Alda</span><span class="ruby-operator">::</span><span class="ruby-constant">REPL</span>.<span class="ruby-identifier">new</span>
+<span class="ruby-identifier">repl</span>.<span class="ruby-identifier">raw_message</span> <span class="ruby-value">op:</span> <span class="ruby-string">&#39;describe&#39;</span> <span class="ruby-comment"># =&gt; {&quot;ops&quot;=&gt;...}</span>
+</pre>
+
+          <div class="method-source-code" id="raw_message-source">
+            <pre><span class="ruby-comment"># File lib/alda-rb/repl.rb, line 296</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">raw_message</span> <span class="ruby-identifier">contents</span>
+  <span class="ruby-constant">Alda</span><span class="ruby-operator">::</span><span class="ruby-constant">GenerationError</span>.<span class="ruby-identifier">assert_generation</span> [<span class="ruby-value">:v2</span>]
+  <span class="ruby-identifier">contents</span> = <span class="ruby-constant">JSON</span>.<span class="ruby-identifier">parse</span> <span class="ruby-identifier">contents</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">contents</span>.<span class="ruby-identifier">is_a?</span> <span class="ruby-constant">String</span>
+  <span class="ruby-ivar">@socket</span>.<span class="ruby-identifier">write</span> <span class="ruby-identifier">contents</span>.<span class="ruby-identifier">bencode</span>
+  <span class="ruby-ivar">@bencode_parser</span>.<span class="ruby-identifier">parse!</span>
+<span class="ruby-keyword">end</span></pre>
+          </div>
+        </div>
+
+
+      </div>
+
+      <div id="method-i-rb_code" class="method-detail ">
+        <div class="method-header">
+          <div class="method-heading">
+            <span class="method-callseq">
+              rb_code() &rarr; String
+            </span>
+            <span class="method-click-advice">click to toggle source</span>
+          </div>
+        </div>
+
+        <div class="method-description">
+          <p>Reads and returns the next Ruby codes input in the REPL session. It can intelligently continue reading if the code is not complete yet.</p>
+
+          <div class="method-source-code" id="rb_code-source">
+            <pre><span class="ruby-comment"># File lib/alda-rb/repl.rb, line 362</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">rb_code</span>
+  <span class="ruby-identifier">result</span> = <span class="ruby-string">&#39;&#39;</span>
+  <span class="ruby-identifier">indent</span> = <span class="ruby-value">0</span>
+  <span class="ruby-keyword">begin</span>
+    <span class="ruby-identifier">result</span>.<span class="ruby-identifier">concat</span> <span class="ruby-identifier">readline</span>(<span class="ruby-identifier">indent</span>).<span class="ruby-identifier">tap</span> { <span class="ruby-keyword">return</span> <span class="ruby-keyword">unless</span> <span class="ruby-identifier">_1</span> }, <span class="ruby-value">?\n</span>
+    <span class="ruby-comment"># IRB once changed the API of RubyLex#check_state. Take care of that.</span>
+    <span class="ruby-identifier">opts</span> = <span class="ruby-ivar">@lex</span>.<span class="ruby-identifier">method</span>(<span class="ruby-value">:check_state</span>).<span class="ruby-identifier">arity</span>.<span class="ruby-identifier">positive?</span> <span class="ruby-operator">?</span> {} <span class="ruby-operator">:</span> { <span class="ruby-value">context:</span> <span class="ruby-ivar">@binding</span> }
+    <span class="ruby-identifier">ltype</span>, <span class="ruby-identifier">indent</span>, <span class="ruby-identifier">continue</span>, <span class="ruby-identifier">block_open</span> = <span class="ruby-ivar">@lex</span>.<span class="ruby-identifier">check_state</span> <span class="ruby-identifier">result</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">opts</span>
+  <span class="ruby-keyword">rescue</span> <span class="ruby-constant">Interrupt</span>
+    <span class="ruby-identifier">$stdout</span>.<span class="ruby-identifier">puts</span>
+    <span class="ruby-keyword">return</span> <span class="ruby-string">&#39;&#39;</span>
+  <span class="ruby-keyword">end</span> <span class="ruby-keyword">while</span> <span class="ruby-identifier">ltype</span> <span class="ruby-operator">||</span> <span class="ruby-identifier">indent</span>.<span class="ruby-identifier">nonzero?</span> <span class="ruby-operator">||</span> <span class="ruby-identifier">continue</span> <span class="ruby-operator">||</span> <span class="ruby-identifier">block_open</span>
+  <span class="ruby-identifier">result</span>
+<span class="ruby-keyword">end</span></pre>
+          </div>
+        </div>
+
+
+      </div>
+
+      <div id="method-i-readline" class="method-detail ">
+        <div class="method-header">
+          <div class="method-heading">
+            <span class="method-callseq">
+              readline(indent = 0) &rarr; String
+            </span>
+            <span class="method-click-advice">click to toggle source</span>
+          </div>
+        </div>
+
+        <div class="method-description">
+          <p>Prompts the user to input a line. The parameter <code>indent</code> is the indentation level. Twice the number of spaces is already in the input field before the user fills in if <a href="REPL.html#attribute-i-reline"><code>reline</code></a> is true. The prompt hint is different for zero <code>indent</code> and nonzero <code>indent</code>. Returns the user input.</p>
+
+          <div class="method-source-code" id="readline-source">
+            <pre><span class="ruby-comment"># File lib/alda-rb/repl.rb, line 387</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">readline</span> <span class="ruby-identifier">indent</span> = <span class="ruby-value">0</span>
+  <span class="ruby-identifier">prompt</span> = <span class="ruby-identifier">indent</span>.<span class="ruby-identifier">nonzero?</span> <span class="ruby-operator">?</span> <span class="ruby-string">&#39;. &#39;</span> <span class="ruby-operator">:</span> <span class="ruby-string">&#39;&gt; &#39;</span>
+  <span class="ruby-identifier">prompt</span> = <span class="ruby-identifier">prompt</span>.<span class="ruby-identifier">green</span> <span class="ruby-keyword">if</span> <span class="ruby-ivar">@color</span>
+  <span class="ruby-keyword">if</span> <span class="ruby-ivar">@reline</span>
+    <span class="ruby-constant">Reline</span>.<span class="ruby-identifier">pre_input_hook</span> = <span class="ruby-operator">-&gt;</span> <span class="ruby-keyword">do</span>
+      <span class="ruby-constant">Reline</span>.<span class="ruby-identifier">insert_text</span> <span class="ruby-string">&#39;  &#39;</span> <span class="ruby-operator">*</span> <span class="ruby-identifier">indent</span>
+      <span class="ruby-constant">Reline</span>.<span class="ruby-identifier">redisplay</span>
+      <span class="ruby-constant">Reline</span>.<span class="ruby-identifier">pre_input_hook</span> = <span class="ruby-keyword">nil</span>
+    <span class="ruby-keyword">end</span>
+    <span class="ruby-constant">Reline</span>.<span class="ruby-identifier">readline</span> <span class="ruby-identifier">prompt</span>, <span class="ruby-keyword">true</span>
+  <span class="ruby-keyword">else</span>
+    <span class="ruby-identifier">$stdout</span>.<span class="ruby-identifier">print</span> <span class="ruby-identifier">prompt</span>
+    <span class="ruby-identifier">$stdout</span>.<span class="ruby-identifier">flush</span>
+    <span class="ruby-identifier">$stdin</span>.<span class="ruby-identifier">gets</span> <span class="ruby-value">chomp:</span> <span class="ruby-keyword">true</span>
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+          </div>
+        </div>
+
+
+      </div>
+
+      <div id="method-i-run" class="method-detail ">
+        <div class="method-header">
+          <div class="method-heading">
+            <span class="method-callseq">
+              run() &rarr; nil
+            </span>
+            <span class="method-click-advice">click to toggle source</span>
+          </div>
+        </div>
+
+        <div class="method-description">
+          <p>Runs the session. Includes the start (<a href="REPL.html#method-i-start"><code>start</code></a>), the main loop, and the termination (<a href="REPL.html#method-i-terminate"><code>terminate</code></a>).</p>
+
+          <div class="method-source-code" id="run-source">
+            <pre><span class="ruby-comment"># File lib/alda-rb/repl.rb, line 339</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">run</span>
+  <span class="ruby-identifier">start</span>
+  <span class="ruby-keyword">while</span> <span class="ruby-identifier">code</span> = <span class="ruby-identifier">rb_code</span>
+    <span class="ruby-keyword">next</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">code</span>.<span class="ruby-identifier">empty?</span>
+    <span class="ruby-keyword">break</span> <span class="ruby-keyword">unless</span> <span class="ruby-identifier">process_rb_code</span> <span class="ruby-identifier">code</span>
+  <span class="ruby-keyword">end</span>
+  <span class="ruby-identifier">terminate</span>
+<span class="ruby-keyword">end</span></pre>
+          </div>
+        </div>
+
+
+      </div>
+
+      <div id="method-i-setup_repl" class="method-detail ">
+        <div class="method-header">
+          <div class="method-heading">
+            <span class="method-callseq">
+              setup_repl(opts) &rarr; nil
+            </span>
+            <span class="method-click-advice">click to toggle source</span>
+          </div>
+        </div>
+
+        <div class="method-description">
+          <p>Sets up the REPL session. This method is called in <a href="REPL.html#method-c-new"><code>::new</code></a>. After you <a href="REPL.html#method-i-terminate"><code>terminate</code></a> the session, you cannot use the REPL anymore unless you call this method again.</p>
+
+          <div class="method-source-code" id="setup_repl-source">
+            <pre><span class="ruby-comment"># File lib/alda-rb/repl.rb, line 268</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">setup_repl</span> <span class="ruby-identifier">opts</span>
+  <span class="ruby-keyword">if</span> <span class="ruby-constant">Alda</span>.<span class="ruby-identifier">v1?</span>
+    <span class="ruby-ivar">@history</span> = <span class="ruby-constant">StringIO</span>.<span class="ruby-identifier">new</span>
+  <span class="ruby-keyword">else</span>
+    <span class="ruby-ivar">@port</span> = (<span class="ruby-identifier">opts</span>.<span class="ruby-identifier">fetch</span> <span class="ruby-value">:port</span>, <span class="ruby-value">-1</span>).<span class="ruby-identifier">to_i</span>
+    <span class="ruby-ivar">@host</span> = <span class="ruby-identifier">opts</span>.<span class="ruby-identifier">fetch</span> <span class="ruby-value">:host</span>, <span class="ruby-string">&#39;localhost&#39;</span>
+    <span class="ruby-keyword">unless</span> <span class="ruby-ivar">@port</span>.<span class="ruby-identifier">positive?</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-node">%w[localhost 127.0.0.1]</span>.<span class="ruby-identifier">include?</span>(<span class="ruby-ivar">@host</span>) <span class="ruby-operator">&amp;&amp;</span>
+           <span class="ruby-constant">Alda</span>.<span class="ruby-identifier">processes</span>.<span class="ruby-identifier">any?</span> { <span class="ruby-identifier">_1</span>[<span class="ruby-value">:port</span>] <span class="ruby-operator">==</span> <span class="ruby-ivar">@port</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">_1</span>[<span class="ruby-value">:type</span>] <span class="ruby-operator">==</span> <span class="ruby-value">:repl_server</span> }
+      <span class="ruby-constant">Alda</span>.<span class="ruby-identifier">env</span>(<span class="ruby-value">ALDA_DISABLE_SPAWNING:</span> <span class="ruby-value">:no</span>) { <span class="ruby-ivar">@nrepl_pipe</span> = <span class="ruby-constant">Alda</span>.<span class="ruby-identifier">pipe</span> <span class="ruby-value">:repl</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">opts</span>, <span class="ruby-value">server:</span> <span class="ruby-keyword">true</span> }
+      <span class="ruby-regexp">/nrepl:\/\/[a-zA-Z0-9._\-]+:(?&lt;port&gt;\d+)/</span> <span class="ruby-operator">=~</span> <span class="ruby-ivar">@nrepl_pipe</span>.<span class="ruby-identifier">gets</span>
+      <span class="ruby-ivar">@port</span> = <span class="ruby-identifier">port</span>.<span class="ruby-identifier">to_i</span>
+      <span class="ruby-constant">Process</span>.<span class="ruby-identifier">detach</span> <span class="ruby-ivar">@nrepl_pipe</span>.<span class="ruby-identifier">pid</span>
+    <span class="ruby-keyword">end</span>
+    <span class="ruby-ivar">@socket</span> = <span class="ruby-constant">TCPSocket</span>.<span class="ruby-identifier">new</span> <span class="ruby-ivar">@host</span>, <span class="ruby-ivar">@port</span>
+    <span class="ruby-ivar">@bencode_parser</span> = <span class="ruby-constant">BEncode</span><span class="ruby-operator">::</span><span class="ruby-constant">Parser</span>.<span class="ruby-identifier">new</span> <span class="ruby-ivar">@socket</span>
+  <span class="ruby-keyword">end</span>
+  <span class="ruby-keyword">nil</span>
+<span class="ruby-keyword">end</span></pre>
+          </div>
+        </div>
+
+
+      </div>
+
+      <div id="method-i-start" class="method-detail ">
+        <div class="method-header">
+          <div class="method-heading">
+            <span class="method-callseq">
+              start() &rarr; nil
+            </span>
+            <span class="method-click-advice">click to toggle source</span>
+          </div>
+        </div>
+
+        <div class="method-description">
+          <p>Starts the session. Currently does nothing.</p>
+
+          <div class="method-source-code" id="start-source">
+            <pre><span class="ruby-comment"># File lib/alda-rb/repl.rb, line 353</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">start</span>
+<span class="ruby-keyword">end</span></pre>
+          </div>
+        </div>
+
+
+      </div>
+
+      <div id="method-i-terminate" class="method-detail ">
+        <div class="method-header">
+          <div class="method-heading">
+            <span class="method-callseq">
+              terminate() &rarr; nil
+            </span>
+            <span class="method-click-advice">click to toggle source</span>
+          </div>
+        </div>
+
+        <div class="method-description">
+          <p>Terminates the <a href="REPL.html"><code>REPL</code></a> session. In Alda 1, just calls <a href="REPL.html#method-i-clear_history"><code>clear_history</code></a>. In Alda 2, sends a SIGINT to the nREPL server if it was spawned by the Ruby program.</p>
+
+          <div class="method-source-code" id="terminate-source">
+            <pre><span class="ruby-comment"># File lib/alda-rb/repl.rb, line 468</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">terminate</span>
+  <span class="ruby-keyword">if</span> <span class="ruby-constant">Alda</span>.<span class="ruby-identifier">v1?</span>
+    <span class="ruby-identifier">clear_history</span>
+  <span class="ruby-keyword">else</span>
+    <span class="ruby-keyword">if</span> <span class="ruby-ivar">@nrepl_pipe</span>
+      <span class="ruby-keyword">if</span> <span class="ruby-constant">Alda</span><span class="ruby-operator">::</span><span class="ruby-constant">Utils</span>.<span class="ruby-identifier">win_platform?</span>
+        <span class="ruby-keyword">unless</span> <span class="ruby-constant">IO</span>.<span class="ruby-identifier">popen</span>([<span class="ruby-string">&#39;taskkill&#39;</span>, <span class="ruby-string">&#39;/f&#39;</span>, <span class="ruby-string">&#39;/pid&#39;</span>, <span class="ruby-ivar">@nrepl_pipe</span>.<span class="ruby-identifier">pid</span>.<span class="ruby-identifier">to_s</span>], <span class="ruby-operator">&amp;</span><span class="ruby-value">:read</span>).<span class="ruby-identifier">include?</span> <span class="ruby-string">&#39;SUCCESS&#39;</span>
+          <span class="ruby-constant">Alda</span><span class="ruby-operator">::</span><span class="ruby-constant">Warning</span>.<span class="ruby-identifier">warn</span> <span class="ruby-string">&#39;failed to kill nREPL server; may become zombie process&#39;</span>
+        <span class="ruby-keyword">end</span>
+      <span class="ruby-keyword">else</span>
+        <span class="ruby-constant">Process</span>.<span class="ruby-identifier">kill</span> <span class="ruby-value">:INT</span>, <span class="ruby-ivar">@nrepl_pipe</span>.<span class="ruby-identifier">pid</span>
+      <span class="ruby-keyword">end</span>
+      <span class="ruby-ivar">@nrepl_pipe</span>.<span class="ruby-identifier">close</span>
+    <span class="ruby-keyword">end</span>
+    <span class="ruby-ivar">@socket</span>.<span class="ruby-identifier">close</span>
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+          </div>
+        </div>
+
+
+      </div>
+
+      <div id="method-i-try_command" class="method-detail ">
+        <div class="method-header">
+          <div class="method-heading">
+            <span class="method-callseq">
+              try_command() { ... } &rarr; obj
+            </span>
+            <span class="method-click-advice">click to toggle source</span>
+          </div>
+        </div>
+
+        <div class="method-description">
+          <p>Run the block. In Alda 1, catches <a href="CommandLineError.html"><code>Alda::CommandLineError</code></a>. In Alda 2, catches <a href="NREPLServerError.html"><code>Alda::NREPLServerError</code></a>. If an error is caught, prints the error message (in red if <a href="REPL.html#attribute-i-color"><code>color</code></a> is true).</p>
+
+          <div class="method-source-code" id="try_command-source">
+            <pre><span class="ruby-comment"># File lib/alda-rb/repl.rb, line 437</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">try_command</span>
+  <span class="ruby-keyword">begin</span>
+    <span class="ruby-keyword">yield</span>
+  <span class="ruby-keyword">rescue</span> <span class="ruby-constant">Alda</span>.<span class="ruby-identifier">v1?</span> <span class="ruby-operator">?</span> <span class="ruby-constant">Alda</span><span class="ruby-operator">::</span><span class="ruby-constant">CommandLineError</span> <span class="ruby-operator">:</span> <span class="ruby-constant">Alda</span><span class="ruby-operator">::</span><span class="ruby-constant">NREPLServerError</span> <span class="ruby-operator">=&gt;</span> <span class="ruby-identifier">e</span>
+    <span class="ruby-identifier">puts</span> <span class="ruby-ivar">@color</span> <span class="ruby-operator">?</span> <span class="ruby-identifier">e</span>.<span class="ruby-identifier">message</span>.<span class="ruby-identifier">red</span> <span class="ruby-operator">:</span> <span class="ruby-identifier">e</span>.<span class="ruby-identifier">message</span>
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+          </div>
+        </div>
+
+
+      </div>
+
+    </section>
+
+  </section>
+</main>
+
+
+<footer id="validator-badges" role="contentinfo">
+  <p><a href="https://validator.w3.org/check/referer">Validate</a>
+  <p>Generated by <a href="https://ruby.github.io/rdoc/">RDoc</a> 6.7.0.
+  <p>Based on <a href="http://deveiate.org/projects/Darkfish-RDoc/">Darkfish</a> by <a href="http://deveiate.org">Michael Granger</a>.
+</footer>
+

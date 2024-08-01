@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+
+<title>class Alda::Chord - RDoc Documentation</title>
+
+<script type="text/javascript">
+  var rdoc_rel_prefix = "../";
+  var index_rel_prefix = "../";
+</script>
+
+<script src="../js/navigation.js" defer></script>
+<script src="../js/search.js" defer></script>
+<script src="../js/search_index.js" defer></script>
+<script src="../js/searcher.js" defer></script>
+<script src="../js/darkfish.js" defer></script>
+
+<link href="../css/fonts.css" rel="stylesheet">
+<link href="../css/rdoc.css" rel="stylesheet">
+
+
+<body id="top" role="document" class="class">
+<nav role="navigation">
+  <div id="project-navigation">
+    <div id="home-section" role="region" title="Quick navigation" class="nav-section">
+  <h2>
+    <a href="../index.html" rel="home">Home</a>
+  </h2>
+
+  <div id="table-of-contents-navigation">
+    <a href="../table_of_contents.html#pages">Pages</a>
+    <a href="../table_of_contents.html#classes">Classes</a>
+    <a href="../table_of_contents.html#methods">Methods</a>
+  </div>
+</div>
+
+    <div id="search-section" role="search" class="project-section initially-hidden">
+  <form action="#" method="get" accept-charset="utf-8">
+    <div id="search-field-wrapper">
+      <input id="search-field" role="combobox" aria-label="Search"
+             aria-autocomplete="list" aria-controls="search-results"
+             type="text" name="search" placeholder="Search (/) for a class, method, ..." spellcheck="false"
+             title="Type to search, Up and Down to navigate, Enter to load">
+    </div>
+
+    <ul id="search-results" aria-label="Search Results"
+        aria-busy="false" aria-expanded="false"
+        aria-atomic="false" class="initially-hidden"></ul>
+  </form>
+</div>
+
+  </div>
+
+  
+
+  <div id="class-metadata">
+    
+    
+<div id="parent-class-section" class="nav-section">
+  <h3>Parent</h3>
+
+  <p class="link"><a href="Event.html">Alda::Event</a>
+</div>
+
+    
+<div id="includes-section" class="nav-section">
+  <h3>Included Modules</h3>
+
+  <ul class="link-list">
+    <li><a class="include" href="EventList.html">Alda::EventList</a>
+  </ul>
+</div>
+
+    
+    
+<!-- Method Quickref -->
+<div id="method-list-section" class="nav-section">
+  <h3>Methods</h3>
+
+  <ul class="link-list" role="directory">
+    <li class="calls-super" ><a href="#method-c-new">::new</a>
+    <li ><a href="#method-i-to_alda_code">#to_alda_code</a>
+  </ul>
+</div>
+
+  </div>
+</nav>
+
+<main role="main" aria-labelledby="class-Alda::Chord">
+  <h1 id="class-Alda::Chord" class="class">
+    class Alda::Chord
+  </h1>
+
+  <section class="description">
+    
+<p>A chord event. Includes <a href="EventList.html"><code>Alda::EventList</code></a>.</p>
+
+<p>An <a href="EventContainer.html"><code>Alda::EventContainer</code></a> containing an <a href="Chord.html"><code>Alda::Chord</code></a> can be created using event list sugar. See <a href="EventList.html#method-i-method_missing"><code>Alda::EventList#method_missing</code></a>.</p>
+
+<pre class="ruby"><span class="ruby-constant">Alda</span><span class="ruby-operator">::</span><span class="ruby-constant">Score</span>.<span class="ruby-identifier">new</span> <span class="ruby-keyword">do</span>
+  <span class="ruby-identifier">p</span> <span class="ruby-identifier">x</span>{ <span class="ruby-identifier">c</span>; <span class="ruby-identifier">e</span>; <span class="ruby-identifier">g</span> }.<span class="ruby-identifier">event</span>.<span class="ruby-identifier">class</span> <span class="ruby-comment"># =&gt; Alda::Chord</span>
+<span class="ruby-keyword">end</span>
+</pre>
+
+<p>The event contained by an <a href="EventContainer.html"><code>Alda::EventContainer</code></a> can become an <a href="Chord.html"><code>Alda::Chord</code></a> by using <a href="EventContainer.html#method-i-2F"><code>Alda::EventContainer#/</code></a>.</p>
+
+  </section>
+
+  <section id="5Buntitled-5D" class="documentation-section">
+
+
+
+
+
+     <section id="public-class-5Buntitled-5D-method-details" class="method-section">
+       <header>
+         <h3>Public Class Methods</h3>
+       </header>
+
+      <div id="method-c-new" class="method-detail ">
+        <div class="method-header">
+          <div class="method-heading">
+            <span class="method-callseq">
+              new(*events, &amp;block) &rarr; Alda::Chord
+            </span>
+            <span class="method-click-advice">click to toggle source</span>
+          </div>
+        </div>
+
+        <div class="method-description">
+          <p>There is an event list sugar invoking this method. See <a href="EventList.html#method-i-method_missing"><code>Alda::EventList#method_missing</code></a>.</p>
+
+<p>In most cases, <code>events</code> should be empty. Note that <code>events</code> cannot be specified using the sugar. <code>block</code> is to be passed with the chord object as <code>self</code>.</p>
+
+<pre class="ruby"><span class="ruby-constant">Alda</span><span class="ruby-operator">::</span><span class="ruby-constant">Score</span>.<span class="ruby-identifier">new</span> { <span class="ruby-identifier">piano_</span>; <span class="ruby-identifier">x</span> { <span class="ruby-identifier">c</span>; <span class="ruby-operator">-</span><span class="ruby-identifier">e</span>; <span class="ruby-identifier">g</span> } }.<span class="ruby-identifier">play</span>
+<span class="ruby-comment"># (plays chord Cm)</span>
+</pre>
+            <div class="method-calls-super">
+              Calls superclass method
+              <a href="EventList.html#method-c-new"><code>Alda::EventList::new</code></a>
+            </div>
+
+          <div class="method-source-code" id="new-source">
+            <pre><span class="ruby-comment"># File lib/alda-rb/event.rb, line 762</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">initialize</span> <span class="ruby-operator">*</span><span class="ruby-identifier">events</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>
+  <span class="ruby-identifier">events</span>.<span class="ruby-identifier">each</span> { <span class="ruby-identifier">_1</span>.<span class="ruby-identifier">parent</span> = <span class="ruby-keyword">self</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">_1</span>.<span class="ruby-identifier">is_a?</span> <span class="ruby-constant">Alda</span><span class="ruby-operator">::</span><span class="ruby-constant">Event</span> }
+  <span class="ruby-ivar">@events</span> = <span class="ruby-identifier">events</span>
+  <span class="ruby-keyword">super</span> <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>
+<span class="ruby-keyword">end</span></pre>
+          </div>
+        </div>
+
+
+      </div>
+
+    </section>
+
+     <section id="public-instance-5Buntitled-5D-method-details" class="method-section">
+       <header>
+         <h3>Public Instance Methods</h3>
+       </header>
+
+      <div id="method-i-to_alda_code" class="method-detail ">
+        <div class="method-header">
+          <div class="method-heading">
+            <span class="method-callseq">
+              to_alda_code() &rarr; String
+            </span>
+            <span class="method-click-advice">click to toggle source</span>
+          </div>
+        </div>
+
+        <div class="method-description">
+          <p>Overrides <a href="Event.html#method-i-to_alda_code"><code>Alda::Event#to_alda_code</code></a>.</p>
+
+<p>Behaves differently for Alda 1 and Alda 2: because Alda 2 does not allow octave changes as part of a chord (something like <code>a/&gt;/c</code>, and we have to write <code>a&gt;/c</code> or <code>a/&gt;c</code> instead) (<a href="https://github.com/alda-lang/alda/issues/383">alda-lang/alda#383</a>), the code generated by this method will omit the slash before an octave change.</p>
+
+<pre class="ruby"><span class="ruby-constant">Alda</span>.<span class="ruby-identifier">generation</span> = <span class="ruby-value">:v1</span>
+<span class="ruby-constant">Alda</span><span class="ruby-operator">::</span><span class="ruby-constant">Score</span>.<span class="ruby-identifier">new</span> { <span class="ruby-identifier">a</span><span class="ruby-operator">/</span><span class="ruby-identifier">o!</span><span class="ruby-operator">/</span><span class="ruby-identifier">c</span>; <span class="ruby-identifier">a</span><span class="ruby-operator">/</span><span class="ruby-identifier">o5</span><span class="ruby-operator">/</span><span class="ruby-identifier">c</span> }.<span class="ruby-identifier">to_s</span> <span class="ruby-comment"># =&gt; &quot;a/&gt;/c a/o5/c&quot;</span>
+<span class="ruby-constant">Alda</span>.<span class="ruby-identifier">generation</span> = <span class="ruby-value">:v2</span>
+<span class="ruby-constant">Alda</span><span class="ruby-operator">::</span><span class="ruby-constant">Score</span>.<span class="ruby-identifier">new</span> { <span class="ruby-identifier">a</span><span class="ruby-operator">/</span><span class="ruby-identifier">o!</span><span class="ruby-operator">/</span><span class="ruby-identifier">c</span>; <span class="ruby-identifier">a</span><span class="ruby-operator">/</span><span class="ruby-identifier">o5</span><span class="ruby-operator">/</span><span class="ruby-identifier">c</span> }.<span class="ruby-identifier">to_s</span> <span class="ruby-comment"># =&gt; &quot;a&gt;/c a o5/c&quot;</span>
+</pre>
+
+          <div class="method-source-code" id="to_alda_code-source">
+            <pre><span class="ruby-comment"># File lib/alda-rb/event.rb, line 784</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">to_alda_code</span>
+  <span class="ruby-keyword">return</span> <span class="ruby-identifier">events_alda_codes</span> <span class="ruby-value">?/</span> <span class="ruby-keyword">if</span> <span class="ruby-constant">Alda</span>.<span class="ruby-identifier">v1?</span>
+  <span class="ruby-ivar">@events</span>.<span class="ruby-identifier">each_with_index</span>.<span class="ruby-identifier">with_object</span> <span class="ruby-string">&#39;&#39;</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span>(<span class="ruby-identifier">event</span>, <span class="ruby-identifier">i</span>), <span class="ruby-identifier">result</span><span class="ruby-operator">|</span>
+    <span class="ruby-keyword">if</span> <span class="ruby-identifier">i</span> <span class="ruby-operator">==</span> <span class="ruby-value">0</span>
+      <span class="ruby-comment"># concat nothing</span>
+    <span class="ruby-keyword">elsif</span> <span class="ruby-identifier">event</span>.<span class="ruby-identifier">is_event_of?</span> <span class="ruby-constant">Alda</span><span class="ruby-operator">::</span><span class="ruby-constant">Octave</span>
+      <span class="ruby-identifier">result</span>.<span class="ruby-identifier">concat</span> <span class="ruby-string">&#39; &#39;</span> <span class="ruby-keyword">unless</span> <span class="ruby-identifier">event</span>.<span class="ruby-identifier">num</span>.<span class="ruby-identifier">empty?</span>
+    <span class="ruby-keyword">else</span>
+      <span class="ruby-identifier">result</span>.<span class="ruby-identifier">concat</span> <span class="ruby-string">&#39;/&#39;</span>
+    <span class="ruby-keyword">end</span>
+    <span class="ruby-identifier">result</span>.<span class="ruby-identifier">concat</span> <span class="ruby-identifier">event</span>.<span class="ruby-identifier">to_alda_code</span>
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+          </div>
+        </div>
+
+
+      </div>
+
+    </section>
+
+  </section>
+</main>
+
+
+<footer id="validator-badges" role="contentinfo">
+  <p><a href="https://validator.w3.org/check/referer">Validate</a>
+  <p>Generated by <a href="https://ruby.github.io/rdoc/">RDoc</a> 6.7.0.
+  <p>Based on <a href="http://deveiate.org/projects/Darkfish-RDoc/">Darkfish</a> by <a href="http://deveiate.org">Michael Granger</a>.
+</footer>
+
