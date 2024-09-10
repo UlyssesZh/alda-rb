@@ -1,6 +1,6 @@
 name: Ruby
 
-on: [push,pull_request]
+on: [push, pull_request]
 
 jobs:
   build:
@@ -10,7 +10,7 @@ jobs:
     - name: Set up Ruby
       uses: ruby/setup-ruby@v1
       with:
-        ruby-version: 3.3.0
+        ruby-version: 3.3.5
     - name: Run the default task
       run: |
         gem install bundler
