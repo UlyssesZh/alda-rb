@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    alda-rb (0.3.1)
+    alda-rb (0.4.0)
       bencode
       colorize
 
@@ -28,4 +28,4 @@ DEPENDENCIES
   rdoc
 
 BUNDLED WITH
-   2.5.18
+   2.5.20
